@@ -1,9 +1,14 @@
 import express from 'express'
+import cors from 'cors'
 import connectDB from '../mongodb/connectDB.js'
 import schema from '../data/user.schema.js'
 import User from '../data/user.model.js'
 
 const app = express() 
+
+app.use(cors({
+    origin: 'https://myloginproject.vercel.app'
+}))
 
 app.use(express.json())
 

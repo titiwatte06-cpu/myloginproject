@@ -68,7 +68,8 @@ export default function App() {
   
   async function sendData() {
     try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+        const endpoint = isLogin ? '/login' : '/register'
+        const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -80,7 +81,7 @@ export default function App() {
     } catch (err) {
         console.log(err)
     }
-  }
+}
 
   return (
     <div
@@ -348,7 +349,7 @@ export default function App() {
         </div>
  
         {/* Primary CTA */}
-        <button className="btn-primary" style={{ marginBottom: 18 }}>
+        <button className="btn-primary" style={{ marginBottom: 18 }} onClick={sendData}>
           {isLogin ? 'Sign in' : 'Create Account'}
         </button>
  

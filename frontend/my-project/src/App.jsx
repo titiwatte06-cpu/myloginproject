@@ -82,7 +82,8 @@ export default function App() {
   }
 
   async function sendData() {
-
+    if (!validate()) return
+    
     if (!email) {
       alert("กรุณากรอก Email")
       return

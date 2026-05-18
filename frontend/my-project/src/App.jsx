@@ -82,27 +82,35 @@ export default function App() {
   }
 
   async function sendData() {
-    if (!validate()) return
+  // validate ตรงนี้เลย
+  const newErrors = {}
+  if (!email) newErrors.email = "กรุณากรอก Email"
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    newErrors.email = "รูปแบบ Email ไม่ถูกต้อง"
+  if (!password) newErrors.password = "กรุณากรอก Password"
+  else if (password.length < 6)
+    newErrors.password = "Password ต้องมีอย่างน้อย 6 ตัว"
 
-    try {
-        const endpoint = isLogin ? '/login' : '/register'
-        const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        })
+  setErrors(newErrors)                              // ✅ set ก่อน
+  if (Object.keys(newErrors).length > 0) return    // ✅ แล้วค่อย return
 
-        const data = await res.json()
-
-        alert("success")
-        setEmail("")
-        setPassword("")
-        console.log(data)
-
-    } catch (err) {
-        console.log(err)
-    }
+  try {
+    const endpoint = isLogin ? '/login' : '/register'
+    const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    alert("success")
+    setEmail("")
+    setPassword("")
+    setErrors({})
+    console.log(data)
+  } catch (err) {
+    console.log(err)
   }
+}
 
 
 

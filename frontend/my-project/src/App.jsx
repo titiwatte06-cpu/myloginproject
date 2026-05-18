@@ -76,12 +76,13 @@ export default function App() {
         })
 
         const data = await res.json()
+        alert("success")
         console.log(data)
 
     } catch (err) {
         console.log(err)
     }
-}
+  }
 
   return (
     <div

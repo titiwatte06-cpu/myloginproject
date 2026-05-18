@@ -84,19 +84,6 @@ export default function App() {
   async function sendData() {
     if (!validate()) return
     
-    if (!email) {
-      alert("กรุณากรอก Email")
-      return
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      alert("รูปแบบ Email ไม่ถูกต้อง")
-      return
-    }
-    if (password.length < 6) {
-      alert("Password ต้องมีอย่างน้อย 6 ตัว")
-      return
-    }
-
     try {
         const endpoint = isLogin ? '/login' : '/register'
         const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {

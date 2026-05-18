@@ -65,8 +65,37 @@ export default function App() {
   const [focused, setFocused] = useState(null)
  
   const isLogin = mode === 'login'
+
+  const [errors, setErrors] = useState({})
+
+  const validate = () => {
+  const newErrors = {}
+  if (!email) newErrors.email = "กรุณากรอก Email"
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) 
+    newErrors.email = "รูปแบบ Email ไม่ถูกต้อง"
+  if (!password) newErrors.password = "กรุณากรอก Password"
+  else if (password.length < 6) 
+    newErrors.password = "Password ต้องมีอย่างน้อย 6 ตัว"
   
+  setErrors(newErrors)
+  return Object.keys(newErrors).length === 0 // true = ผ่าน
+  }
+
   async function sendData() {
+
+    if (!email) {
+      alert("กรุณากรอก Email")
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert("รูปแบบ Email ไม่ถูกต้อง")
+      return
+    }
+    if (password.length < 6) {
+      alert("Password ต้องมีอย่างน้อย 6 ตัว")
+      return
+    }
+
     try {
         const endpoint = isLogin ? '/login' : '/register'
         const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
@@ -86,6 +115,8 @@ export default function App() {
         console.log(err)
     }
   }
+
+
 
   return (
     <div

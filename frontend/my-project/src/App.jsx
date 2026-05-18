@@ -344,12 +344,13 @@ export default function App() {
               value={email}
               onChange={e => setEmail(e.target.value)}
             />
-            {errors.email && (
+            
+          </div>
+          {errors.email && (
               <p style={{ color: 'red', fontSize: '13px', marginTop: '4px' }}>
                 {errors.email}
               </p>
-            )}
-          </div>
+          )}
  
           <div className="field-wrap">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -369,15 +370,16 @@ export default function App() {
                 onChange={e => setPassword(e.target.value)}
                 style={{ paddingRight: 52 }}
               />
-              {errors.password && (
-                <p style={{ color: 'red', fontSize: '13px', marginTop: '4px' }}>
-                  {errors.password}
-                </p>
-              )}
+              
               <button className="pass-toggle" onClick={() => setShowPass(p => !p)}>
                 {showPass ? 'HIDE' : 'SHOW'}
               </button>
             </div>
+            {errors.password && (
+                <p style={{ color: 'red', fontSize: '13px', marginTop: '4px' }}>
+                  {errors.password}
+                </p>
+            )}
           </div>
         </div>
  

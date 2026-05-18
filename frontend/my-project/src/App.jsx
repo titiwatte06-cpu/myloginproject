@@ -78,8 +78,8 @@ export default function App() {
         const data = await res.json()
 
         alert("success")
-        setEmail("")
-        setPassword("")
+        setEmail((e) => e.target.value(""))
+        setPassword((e) => e.target.value(""))
         console.log(data)
 
     } catch (err) {

@@ -106,25 +106,15 @@ export default function App() {
 
   async function sendData() {
 
-    const validateEmail = (value) => {
-    if (!value) {
-      return 'กรุณากรอกอีเมล';
+    const emailError = validateEmail(email)
+    const passwordError = validatePassword(password)
+
+  // ถ้ามี error อย่างใดอย่างหนึ่ง → หยุดเลย ไม่ส่ง
+    if (emailError || passwordError) {
+      setEmailError(emailError)
+      setPasswordError(passwordError)
+      return  // ← สำคัญมาก หยุดตรงนี้
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
-      return 'รูปแบบอีเมลไม่ถูกต้อง';
-    }
-    return '';
-    };
-    const validatePassword = (value) => {
-    if (!value) {
-      return 'กรุณากรอกรหัสผ่าน';
-    }
-    if (value.length < 8) {
-      return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-    }
-    return '';
-    };
     try {
       const endpoint = isLogin ? '/login' : '/register'
       const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {

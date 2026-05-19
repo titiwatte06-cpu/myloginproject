@@ -114,6 +114,8 @@ export default function App() {
       setEmailError(emailError)
       setPasswordError(passwordError)
       alert("อีเมลและรหัสไม่ถูกต้อง")
+      setEmail('')
+      setPassword('')
       return  // ← สำคัญมาก หยุดตรงนี้
     }
     try {
@@ -166,7 +168,7 @@ export default function App() {
         .mode-switch { display:flex; background:#f2f2f2; border-radius:10px; padding:3px; gap:3px; }
         .mode-btn { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.2s; background:transparent; color:#999; }
         .mode-btn.active { background:#fff; color:#1a1a1a; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
-        .err-text { color:#ff0000; font-size:12.5px; font-weight:500; margin:4px 0 0 0; }
+        .field-error { color:#ff0000; font-size:12.5px; font-weight:500; margin:4px 0 0 0; }
       `}</style>
  
       <div className="auth-card">

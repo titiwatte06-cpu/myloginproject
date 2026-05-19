@@ -58,280 +58,107 @@ const Logo = () => (
 )
  
 export default function App() {
-  const [mode, setMode] = useState('signup') // 'signup' | 'login'
+  const [mode, setMode] = useState('signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
-  const [focused, setFocused] = useState(null)
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
  
   const isLogin = mode === 'login'
-
-  const [errors, setErrors] = useState({})
-
-  const validate = () => {
-  const newErrors = {}
-  if (!email) newErrors.email = "กรุณากรอก Email"
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) 
-    newErrors.email = "รูปแบบ Email ไม่ถูกต้อง"
-  if (!password) newErrors.password = "กรุณากรอก Password"
-  else if (password.length < 6) 
-    newErrors.password = "Password ต้องมีอย่างน้อย 6 ตัว"
+ 
   
-  setErrors(newErrors)
-  return Object.keys(newErrors).length === 0 // true = ผ่าน
-  }
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailError(validateEmail(value));
+    setMessage('');
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    setPasswordError(validatePassword(value));
+    setMessage('');
+  };
+
+  const validateEmail = (value) => {
+    if (!value) {
+      return 'กรุณากรอกอีเมล';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return 'รูปแบบอีเมลไม่ถูกต้อง';
+    }
+    return '';
+  };
 
   async function sendData() {
-  // validate ตรงนี้เลย
-  const newErrors = {}
-  if (!email) newErrors.email = "กรุณากรอก Email"
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    newErrors.email = "รูปแบบ Email ไม่ถูกต้อง"
-  if (!password) newErrors.password = "กรุณากรอก Password"
-  else if (password.length < 6)
-    newErrors.password = "Password ต้องมีอย่างน้อย 6 ตัว"
-
-  setErrors(newErrors)                              // ✅ set ก่อน
-  if (Object.keys(newErrors).length > 0) return    // ✅ แล้วค่อย return
-
-  try {
-    const endpoint = isLogin ? '/login' : '/register'
-    const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-    const data = await res.json()
-    alert("success")
-    setEmail("")
-    setPassword("")
-    setErrors({})
-    console.log(data)
-  } catch (err) {
-    console.log(err)
+ 
+    try {
+      const endpoint = isLogin ? '/login' : '/register'
+      const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      const data = await res.json()
+      alert('success')
+      setEmail('')
+      setPassword('')
+      console.log(data)
+    } catch (err) {
+      console.log(err)
+    }
   }
-}
-
-
-
+ 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4"
-      style={{
-        background: '#f5f5f5',
-        fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
-      }}
+      style={{ background: '#f5f5f5', fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
- 
-        .auth-card {
-          background: #ffffff;
-          border-radius: 20px;
-          border: 1px solid #e8e8e8;
-          padding: 40px 32px;
-          width: 100%;
-          max-width: 380px;
-          box-shadow: 0 4px 40px rgba(0,0,0,0.07);
-          animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
- 
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
- 
-        .field-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
- 
-        .field-label {
-          font-size: 13px;
-          font-weight: 600;
-          color: #1a1a1a;
-          letter-spacing: 0.01em;
-        }
- 
-        .field-input {
-          border: 1.5px solid #e4e4e4;
-          border-radius: 10px;
-          padding: 11px 14px;
-          font-size: 14px;
-          font-family: inherit;
-          outline: none;
-          background: #fafafa;
-          color: #1a1a1a;
-          transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
-          width: 100%;
-          box-sizing: border-box;
-        }
- 
-        .field-input:focus {
-          border-color: #1a1a1a;
-          background: #fff;
-          box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
-        }
- 
-        .field-input::placeholder {
-          color: #bbb;
-        }
- 
-        .pass-wrap {
-          position: relative;
-        }
- 
-        .pass-toggle {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #999;
-          font-size: 12px;
-          font-weight: 600;
-          font-family: inherit;
-          padding: 0;
-          letter-spacing: 0.03em;
-        }
- 
-        .pass-toggle:hover { color: #1a1a1a; }
- 
-        .btn-primary {
-          background: #1a1a1a;
-          color: #fff;
-          border: none;
-          border-radius: 10px;
-          padding: 13px;
-          font-size: 14px;
-          font-weight: 600;
-          font-family: inherit;
-          cursor: pointer;
-          width: 100%;
-          letter-spacing: 0.01em;
-          transition: background 0.16s, transform 0.12s;
-        }
- 
-        .btn-primary:hover {
-          background: #333;
-          transform: translateY(-1px);
-        }
- 
-        .btn-primary:active { transform: translateY(0); }
- 
-        .divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          color: #ccc;
-          font-size: 12px;
-        }
- 
-        .divider::before, .divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: #ebebeb;
-        }
- 
-        .btn-social {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          border: 1.5px solid #e8e8e8;
-          border-radius: 10px;
-          padding: 11px;
-          font-size: 13.5px;
-          font-weight: 500;
-          font-family: inherit;
-          cursor: pointer;
-          background: #fff;
-          color: #1a1a1a;
-          width: 100%;
-          transition: border-color 0.15s, background 0.15s, transform 0.12s;
-        }
- 
-        .btn-social:hover {
-          border-color: #bbb;
-          background: #fafafa;
-          transform: translateY(-1px);
-        }
- 
-        .btn-social:active { transform: translateY(0); }
- 
-        .toggle-text {
-          font-size: 13px;
-          color: #999;
-          text-align: center;
-        }
- 
-        .toggle-link {
-          color: #1a1a1a;
-          font-weight: 700;
-          cursor: pointer;
-          text-decoration: none;
-          transition: opacity 0.15s;
-        }
- 
-        .toggle-link:hover { opacity: 0.6; }
- 
-        .mode-switch {
-          display: flex;
-          background: #f2f2f2;
-          border-radius: 10px;
-          padding: 3px;
-          gap: 3px;
-        }
- 
-        .mode-btn {
-          flex: 1;
-          padding: 8px;
-          border: none;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          font-family: inherit;
-          cursor: pointer;
-          transition: all 0.2s;
-          background: transparent;
-          color: #999;
-        }
- 
-        .mode-btn.active {
-          background: #fff;
-          color: #1a1a1a;
-          box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-        }
-      `}
-      </style>
+        .auth-card { background:#fff; border-radius:20px; border:1px solid #e8e8e8; padding:40px 32px; width:100%; max-width:380px; box-shadow:0 4px 40px rgba(0,0,0,0.07); animation:slideUp 0.4s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        .field-wrap { display:flex; flex-direction:column; gap:5px; }
+        .field-label { font-size:13px; font-weight:600; color:#1a1a1a; letter-spacing:0.01em; }
+        .field-input { border:1.5px solid #e4e4e4; border-radius:10px; padding:11px 14px; font-size:14px; font-family:inherit; outline:none; background:#fafafa; color:#1a1a1a; transition:all 0.18s; width:100%; box-sizing:border-box; }
+        .field-input:focus { border-color:#1a1a1a; background:#fff; box-shadow:0 0 0 3px rgba(0,0,0,0.06); }
+        .field-input::placeholder { color:#bbb; }
+        .field-input.has-error { border-color:#ff4d4d; background:#fff8f8; }
+        .field-input.has-error:focus { border-color:#ff4d4d; box-shadow:0 0 0 3px rgba(255,77,77,0.15); }
+        .pass-wrap { position:relative; }
+        .pass-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#999; font-size:12px; font-weight:600; font-family:inherit; padding:0; letter-spacing:0.03em; }
+        .pass-toggle:hover { color:#1a1a1a; }
+        .btn-primary { background:#1a1a1a; color:#fff; border:none; border-radius:10px; padding:13px; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; width:100%; letter-spacing:0.01em; transition:background 0.16s,transform 0.12s; }
+        .btn-primary:hover { background:#333; transform:translateY(-1px); }
+        .btn-primary:active { transform:translateY(0); }
+        .divider { display:flex; align-items:center; gap:12px; color:#ccc; font-size:12px; }
+        .divider::before,.divider::after { content:''; flex:1; height:1px; background:#ebebeb; }
+        .btn-social { display:flex; align-items:center; justify-content:center; gap:10px; border:1.5px solid #e8e8e8; border-radius:10px; padding:11px; font-size:13.5px; font-weight:500; font-family:inherit; cursor:pointer; background:#fff; color:#1a1a1a; width:100%; transition:border-color 0.15s,background 0.15s,transform 0.12s; }
+        .btn-social:hover { border-color:#bbb; background:#fafafa; transform:translateY(-1px); }
+        .btn-social:active { transform:translateY(0); }
+        .toggle-text { font-size:13px; color:#999; text-align:center; }
+        .toggle-link { color:#1a1a1a; font-weight:700; cursor:pointer; text-decoration:none; transition:opacity 0.15s; }
+        .toggle-link:hover { opacity:0.6; }
+        .mode-switch { display:flex; background:#f2f2f2; border-radius:10px; padding:3px; gap:3px; }
+        .mode-btn { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.2s; background:transparent; color:#999; }
+        .mode-btn.active { background:#fff; color:#1a1a1a; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
+        .err-text { color:red; font-size:12.5px; font-weight:500; margin:4px 0 0 0; }
+      `}</style>
  
       <div className="auth-card">
-        {/* Logo */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
           <Logo />
         </div>
  
-        {/* Mode switcher */}
         <div className="mode-switch" style={{ marginBottom: 24 }}>
-          <button
-            className={`mode-btn ${!isLogin ? 'active' : ''}`}
-            onClick={() => setMode('signup')}
-          >
-            Sign up
-          </button>
-          <button
-            className={`mode-btn ${isLogin ? 'active' : ''}`}
-            onClick={() => setMode('login')}
-          >
-            Log in
-          </button>
+          <button className={`mode-btn ${!isLogin ? 'active' : ''}`} onClick={() => setMode('signup')}>Sign up</button>
+          <button className={`mode-btn ${isLogin ? 'active' : ''}`} onClick={() => setMode('login')}>Log in</button>
         </div>
  
-        {/* Heading */}
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', margin: 0, marginBottom: 4 }}>
             {isLogin ? 'Welcome back' : 'Create an account'}
@@ -341,41 +168,41 @@ export default function App() {
           </p>
         </div>
  
-        {/* Fields */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
+ 
+          {/* Email field */}
           <div className="field-wrap">
             <label className="field-label">Email</label>
             <input
-              className="field-input"
-              type="email"
+              className={emailError ? 'input-error' : ''}
+              type="text"
               placeholder="you@example.com"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={handleEmailChange}
+              onBlur={() => setEmailError(validateEmail(email))}
             />
-            
+            {/* ✅ แสดง error ของ Email ในตำแหน่งที่ถูกต้อง */}
+            {emailError && <p className="field-error">{emailError}</p>}
           </div>
-          {errors.email && (
-              <p style={{ color: 'red', fontSize: '13px', marginTop: '4px' }}>
-                {errors.email}
-              </p>
-          )}
+
  
+          {/* Password field */}
           <div className="field-wrap">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label className="field-label">Password</label>
-              {isLogin && (
-                <span style={{ fontSize: 12, color: '#888', cursor: 'pointer', fontWeight: 500 }}>
-                  Forgot?
-                </span>
-              )}
+              {isLogin && <span style={{ fontSize: 12, color: '#888', cursor: 'pointer', fontWeight: 500 }}>Forgot?</span>}
             </div>
             <div className="pass-wrap">
               <input
-                className="field-input"
+                className={passwordError ? 'input-error' : ''}
                 type={showPass ? 'text' : 'password'}
                 placeholder={isLogin ? '••••••••' : 'Min. 8 characters'}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  setPassword(e.target.value)
+                  // ✅ ล้าง error ทันทีเมื่อพิมพ์ใหม่
+                  if (errors.password) setErrors(prev => ({ ...prev, password: '' }))
+                }}
                 style={{ paddingRight: 52 }}
               />
               
@@ -383,36 +210,25 @@ export default function App() {
                 {showPass ? 'HIDE' : 'SHOW'}
               </button>
             </div>
-            {errors.password && (
-                <p style={{ color: 'red', fontSize: '13px', marginTop: '4px' }}>
-                  {errors.password}
-                </p>
-            )}
+            {passwordError && <p className="field-error">{passwordError}</p>}
+            {/* ✅ แสดง error ของ Password ในตำแหน่งที่ถูกต้อง (ย้ายออกมาจาก pass-wrap) */}
+            
           </div>
+ 
         </div>
  
-        {/* Primary CTA */}
         <button className="btn-primary" style={{ marginBottom: 18 }} onClick={sendData}>
           {isLogin ? 'Sign in' : 'Create Account'}
         </button>
  
-        {/* Divider */}
         <div className="divider" style={{ marginBottom: 14 }}>or continue with</div>
  
-        {/* Social buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
-          <button className="btn-social">
-            <GoogleIcon /> Google
-          </button>
-          <button className="btn-social">
-            <FacebookIcon /> Facebook
-          </button>
-          <button className="btn-social">
-            <GitHubIcon /> GitHub
-          </button>
+          <button className="btn-social"><GoogleIcon /> Google</button>
+          <button className="btn-social"><FacebookIcon /> Facebook</button>
+          <button className="btn-social"><GitHubIcon /> GitHub</button>
         </div>
  
-        {/* Footer */}
         <p className="toggle-text">
           {isLogin ? "Don't have an account? " : 'Already a user? '}
           <span className="toggle-link" onClick={() => setMode(isLogin ? 'signup' : 'login')}>

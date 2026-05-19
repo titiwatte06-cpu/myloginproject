@@ -99,13 +99,32 @@ export default function App() {
       return 'กรุณากรอกรหัสผ่าน';
     }
     if (value.length < 8) {
-      return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+      return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
     }
     return '';
   };
 
   async function sendData() {
- 
+
+    const validateEmail = (value) => {
+    if (!value) {
+      return 'กรุณากรอกอีเมล';
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return 'รูปแบบอีเมลไม่ถูกต้อง';
+    }
+    return '';
+    };
+    const validatePassword = (value) => {
+    if (!value) {
+      return 'กรุณากรอกรหัสผ่าน';
+    }
+    if (value.length < 8) {
+      return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+    }
+    return '';
+    };
     try {
       const endpoint = isLogin ? '/login' : '/register'
       const res = await fetch(`${import.meta.env.VITE_API_URL}${endpoint}`, {
@@ -219,7 +238,6 @@ export default function App() {
                 {showPass ? 'HIDE' : 'SHOW'}
               </button>
             </div>
-            {emailError && <p className="field-error">{emailError}</p>}
             {passwordError && <p className="field-error">{passwordError}</p>}
             {/* ✅ แสดง error ของ Password ในตำแหน่งที่ถูกต้อง (ย้ายออกมาจาก pass-wrap) */}
             

@@ -113,6 +113,7 @@ export default function App() {
     if (emailError || passwordError) {
       setEmailError(emailError)
       setPasswordError(passwordError)
+      alert("อีเมลและรหัสไม่ถูกต้อง")
       return  // ← สำคัญมาก หยุดตรงนี้
     }
     try {

@@ -94,6 +94,16 @@ export default function App() {
     return '';
   };
 
+  const validatePassword = (value) => {
+    if (!value) {
+      return 'กรุณากรอกรหัสผ่าน';
+    }
+    if (value.length < 6) {
+      return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+    }
+    return '';
+  };
+
   async function sendData() {
  
     try {
@@ -146,7 +156,7 @@ export default function App() {
         .mode-switch { display:flex; background:#f2f2f2; border-radius:10px; padding:3px; gap:3px; }
         .mode-btn { flex:1; padding:8px; border:none; border-radius:8px; font-size:13px; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.2s; background:transparent; color:#999; }
         .mode-btn.active { background:#fff; color:#1a1a1a; box-shadow:0 1px 6px rgba(0,0,0,0.1); }
-        .err-text { color:red; font-size:12.5px; font-weight:500; margin:4px 0 0 0; }
+        .err-text { color:#ff0000; font-size:12.5px; font-weight:500; margin:4px 0 0 0; }
       `}</style>
  
       <div className="auth-card">
@@ -180,6 +190,7 @@ export default function App() {
               value={email}
               onChange={handleEmailChange}
               onBlur={() => setEmailError(validateEmail(email))}
+              className={emailError ? 'input-error' : ''}
             />
             {/* ✅ แสดง error ของ Email ในตำแหน่งที่ถูกต้อง */}
             {emailError && <p className="field-error">{emailError}</p>}
@@ -198,14 +209,12 @@ export default function App() {
                 type={showPass ? 'text' : 'password'}
                 placeholder={isLogin ? '••••••••' : 'Min. 8 characters'}
                 value={password}
-                onChange={e => {
-                  setPassword(e.target.value)
-                  // ✅ ล้าง error ทันทีเมื่อพิมพ์ใหม่
-                  if (errors.password) setErrors(prev => ({ ...prev, password: '' }))
-                }}
+                onChange={handlePasswordChange}
+                onBlur={() => setPasswordError(validatePassword(password))}
+                className={passwordError ? 'input-error' : ''}
                 style={{ paddingRight: 52 }}
               />
-              
+
               <button className="pass-toggle" onClick={() => setShowPass(p => !p)}>
                 {showPass ? 'HIDE' : 'SHOW'}
               </button>

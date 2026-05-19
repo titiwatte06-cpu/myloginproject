@@ -47,11 +47,15 @@ app.post('/login',async (req, res) => {
         const { email, password } = req.body  // รับข้อมูลจาก frontend
 
         // หา user จาก DB
-        const user = await User.findOne({ email, password })
+        const user = await User.findOne({ email })
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
+
+        const passwordchecked = await compare(password,'$2b$10$H.iHx5FsRBlXDyoPxU7dOemtKn811EhRRT.3Qz59rjLG6kP7Qyz8S')
+
+        if (!passwordchecked) return res.status(401).json({ message: 'Invalid email or password' })
 
         res.status(200).json({ message: 'Login successful', user })
 

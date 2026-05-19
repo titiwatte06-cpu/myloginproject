@@ -3,6 +3,7 @@ import cors from 'cors'
 import connectDB from '../mongodb/connectDB.js'
 import schema from '../data/user.schema.js'
 import User from '../data/user.model.js'
+import bcrypt from 'bcrypt'
 
 const app = express() 
 
@@ -12,11 +13,13 @@ app.use(cors({
 
 app.use(express.json())
 
-app.get('/login')
+
 
 app.post('/register', async (req, res) => {
     try {
         const { email, password } = req.body
+
+        const saltrounds = 10;
 
         // เช็คว่า email ซ้ำไหม
         const existing = await User.findOne({ email })
@@ -24,8 +27,18 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'Email already exists' })
         }
 
+
+
+        const passwordhased = await bcrypt.hash(password,saltrounds,() => {
+            
+        })
+
         // สร้าง user ใหม่
-        const newUser = new User({ email, password })
+        // hash password ก่อน
+        const passwordHashed = await bcrypt.hash(password, saltrounds)
+
+        // สร้าง user ใหม่ — ใส่ passwordHashed ไม่ใช่ password
+        const newUser = new User({ email, password: passwordHashed })
         await newUser.save()
 
         res.status(201).json({ message: 'Register successful' })

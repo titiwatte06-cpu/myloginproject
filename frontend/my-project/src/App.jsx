@@ -98,7 +98,7 @@ export default function App() {
     if (!value) {
       return 'กรุณากรอกรหัสผ่าน';
     }
-    if (value.length < 6) {
+    if (value.length < 8) {
       return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
     }
     return '';
@@ -219,6 +219,7 @@ export default function App() {
                 {showPass ? 'HIDE' : 'SHOW'}
               </button>
             </div>
+            {emailError && <p className="field-error">{emailError}</p>}
             {passwordError && <p className="field-error">{passwordError}</p>}
             {/* ✅ แสดง error ของ Password ในตำแหน่งที่ถูกต้อง (ย้ายออกมาจาก pass-wrap) */}
             

@@ -10,7 +10,8 @@ import { authUser } from '../authmiddleware/auth.js'
 const app = express() 
 
 app.use(cors({
-    origin: 'https://myloginproject.vercel.app'
+    origin: 'https://myloginproject.vercel.app',
+    credentials:true
 }))
 
 app.use(express.json())
@@ -40,6 +41,13 @@ app.post('/register', async (req, res) => {
 
         const token = await jwt.sign({ id: newUser._id },process.env.SECRET_KEY,{expiresIn:"7d"})
 
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
+        })
+
         res.status(201).json({ message: 'Register successful', token })
 
     } catch (err) {
@@ -48,7 +56,7 @@ app.post('/register', async (req, res) => {
     }
 })
 
-app.post('/login',authUser,async (req, res) => {
+app.post('/login',async (req, res) => {
     try {
         const { email, password } = req.body  // รับข้อมูลจาก frontend
 
@@ -69,21 +77,25 @@ app.post('/login',authUser,async (req, res) => {
         process.env.SECRET_KEY,
         { expiresIn: '7d' }
         )
-        
+
+        console.log(process.env.SECRET_KEY)
+
         res.cookie('accessToken', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
         })
-        
-        res.status(200).json({ message: 'Login successful', user })
+        console.log(process.env.NODE_ENV)
+        res.status(200).json({ message: 'Login successful', user , token})
 
     } catch (err) {
         console.log(err)
         res.status(500).json({ message: 'Server error', err })
     }
 })
+
+
 
 const PORT = 3000;
 

@@ -64,7 +64,8 @@ export default function App() {
   const [showPass, setShowPass] = useState(false)
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
- 
+  const [message, setMessage] = useState("");
+
   const isLogin = mode === 'login'
  
   

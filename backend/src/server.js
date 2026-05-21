@@ -4,6 +4,8 @@ import connectDB from '../mongodb/connectDB.js'
 import schema from '../data/user.schema.js'
 import User from '../data/user.model.js'
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import { authUser } from '../authmiddleware/auth.js'
 
 const app = express() 
 
@@ -19,13 +21,15 @@ app.post('/register', async (req, res) => {
     try {
         const { email, password } = req.body
 
-        const saltrounds = await bcrypt.genSalt();
+        
 
         // เช็คว่า email ซ้ำไหม
         const existing = await User.findOne({ email })
         if (existing) {
             return res.status(400).json({ message: 'Email already exists' })
         }
+
+        const saltrounds = await bcrypt.genSalt();
         // สร้าง user ใหม่
         // hash password ก่อน
         const passwordHashed = await bcrypt.hash(password, saltrounds)
@@ -34,7 +38,9 @@ app.post('/register', async (req, res) => {
         const newUser = new User({ email, password: passwordHashed })
         await newUser.save()
 
-        res.status(201).json({ message: 'Register successful' })
+        const token = await jwt.sign({ id: newUser._id },process.env.SECRET_KEY,{expiresIn:"7d"})
+
+        res.status(201).json({ message: 'Register successful', token })
 
     } catch (err) {
         console.log(err)
@@ -42,21 +48,35 @@ app.post('/register', async (req, res) => {
     }
 })
 
-app.post('/login',async (req, res) => {
+app.post('/login',authUser,async (req, res) => {
     try {
         const { email, password } = req.body  // รับข้อมูลจาก frontend
 
         // หา user จาก DB
-        const user = await User.findOne({ email })
+        const user = await User.findOne({ email }).select('+password')
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
 
-        const passwordchecked = await compare(password,'$2b$10$H.iHx5FsRBlXDyoPxU7dOemtKn811EhRRT.3Qz59rjLG6kP7Qyz8S')
+        const passwordchecked = await bcrypt.compare(password,user.password)
 
         if (!passwordchecked) return res.status(401).json({ message: 'Invalid email or password' })
+        
 
+        const token = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.SECRET_KEY,
+        { expiresIn: '7d' }
+        )
+        
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
+        })
+        
         res.status(200).json({ message: 'Login successful', user })
 
     } catch (err) {

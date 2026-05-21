@@ -47,7 +47,7 @@ app.post('/register', async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
         })
-
+        console.log(process.env.SECRET_KEY)
         res.status(201).json({ message: 'Register successful', token })
 
     } catch (err) {

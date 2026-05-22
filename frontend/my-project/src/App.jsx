@@ -118,6 +118,7 @@ function AuthPage({ setRoute }) {
     setStatus({ type: 'ok', text: `Welcome ${user.displayName}` });
     navigate('/home', setRoute)
   } catch {
+    console.error(err);
     setStatus({ type: 'bad', text: 'Google login failed' });
   }
 };

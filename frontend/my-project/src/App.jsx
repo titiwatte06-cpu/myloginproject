@@ -117,7 +117,7 @@ function AuthPage({ setRoute }) {
     localStorage.setItem('accessToken', await user.getIdToken());
     setStatus({ type: 'ok', text: `Welcome ${user.displayName}` });
     navigate('/home', setRoute)
-  } catch {
+  } catch (err) {
     console.error(err);
     setStatus({ type: 'bad', text: 'Google login failed' });
   }

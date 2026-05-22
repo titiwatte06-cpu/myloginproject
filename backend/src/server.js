@@ -6,15 +6,19 @@ import User from '../data/user.model.js'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { authUser } from '../authmiddleware/auth.js'
+import oauthRoutes from './oauth.routes.js'
+import passwordRoutes from './password.routes.js'
 
 const app = express() 
 
 app.use(cors({
-    origin: 'https://myloginproject.vercel.app',
+    origin: ['https://myloginproject.vercel.app','http://localhost:5173','http://localhost:5174'],
     credentials:true
 }))
 
 app.use(express.json())
+app.use(oauthRoutes)
+app.use(passwordRoutes)
 
 
 
@@ -63,14 +67,18 @@ app.post('/login',async (req, res) => {
         // หา user จาก DB
         const user = await User.findOne({ email }).select('+password')
 
-        console.log(user.password)
-        console.log(password)
-
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
 
         
+
+        if (!user.password) {
+            return res.status(401).json({ message: 'Please login with your OAuth provider' })
+        }
+
+        console.log(user.password)
+        console.log(password)
 
         const passwordchecked = await bcrypt.compare(password,user.password)
 

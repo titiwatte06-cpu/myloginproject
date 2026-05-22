@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase/firebase.js";
+import AppLayout from './pages/AppLayout.jsx'
+import HomePage from './pages/HomePage.jsx'
+import SearchPage from './pages/SearchPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import ReviewsPage from './pages/ReviewsPage.jsx'
+import './styles/realEstate.css'
 
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
+const appRoutes = ['/home', '/search', '/profile', '/reviews']
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -109,7 +116,8 @@ function AuthPage({ setRoute }) {
     const user = result.user;
     localStorage.setItem('accessToken', await user.getIdToken());
     setStatus({ type: 'ok', text: `Welcome ${user.displayName}` });
-  } catch (err) {
+    navigate('/home', setRoute)
+  } catch {
     setStatus({ type: 'bad', text: 'Google login failed' });
   }
 };
@@ -121,14 +129,14 @@ function AuthPage({ setRoute }) {
 
     if (token) {
       localStorage.setItem('accessToken', token)
-      window.history.replaceState({}, '', '/')
-      setStatus({ type: 'ok', text: 'OAuth login successful' })
+      window.history.replaceState({}, '', '/home')
+      window.setTimeout(() => setRoute('/home'), 0)
     } else if (oauthStatus === 'failed') {
-      setStatus({ type: 'bad', text: 'OAuth login failed' })
+      window.setTimeout(() => setStatus({ type: 'bad', text: 'OAuth login failed' }), 0)
     } else if (oauthStatus === 'no-email') {
-      setStatus({ type: 'bad', text: 'OAuth account has no public email' })
+      window.setTimeout(() => setStatus({ type: 'bad', text: 'OAuth account has no public email' }), 0)
     }
-  }, [])
+  }, [setRoute])
 
   async function submit() {
     const nextEmailError = validateEmail(email)
@@ -159,7 +167,12 @@ function AuthPage({ setRoute }) {
       if (data.token) localStorage.setItem('accessToken', data.token)
       setEmail('')
       setPassword('')
-      setStatus({ type: 'ok', text: data.message || 'Success' })
+      if (isLogin) {
+        navigate('/home', setRoute)
+        return
+      }
+      setMode('login')
+      setStatus({ type: 'ok', text: data.message || 'Registration successful. Please log in.' })
     } catch {
       setStatus({ type: 'bad', text: 'Cannot connect to server' })
     } finally {
@@ -372,6 +385,7 @@ function ChangePasswordPage({ setRoute }) {
 
 export default function App() {
   const [route, setRoute] = useState(window.location.pathname)
+  const isAppRoute = appRoutes.includes(route)
 
   useEffect(() => {
     const onPopState = () => setRoute(window.location.pathname)
@@ -380,11 +394,20 @@ export default function App() {
   }, [])
 
   return (
-    <div className="page-shell">
+    <div className={`page-shell ${isAppRoute ? 'estate-shell' : ''}`}>
       <style>{styles}</style>
-      {route === '/change-password'
-        ? <ChangePasswordPage setRoute={setRoute} />
-        : <AuthPage setRoute={setRoute} />}
+      {isAppRoute ? (
+        <AppLayout route={route} setRoute={setRoute}>
+          {route === '/search' && <SearchPage />}
+          {route === '/profile' && <ProfilePage />}
+          {route === '/reviews' && <ReviewsPage />}
+          {route === '/home' && <HomePage setRoute={setRoute} />}
+        </AppLayout>
+      ) : route === '/change-password' ? (
+        <ChangePasswordPage setRoute={setRoute} />
+      ) : (
+        <AuthPage setRoute={setRoute} />
+      )}
     </div>
   )
 }

@@ -1,0 +1,520 @@
+.page-shell.estate-shell {
+  display: block;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 0;
+  background: #f5f5f5;
+}
+
+.estate-app {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --text: #181818;
+  --muted: #737373;
+  --line: #e6e6e6;
+  --accent: #1a1a1a;
+  --accent-text: #ffffff;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+}
+
+.estate-app[data-theme='dark'] {
+  --bg: #111111;
+  --surface: #1a1a1a;
+  --surface-2: #242424;
+  --text: #f7f7f7;
+  --muted: #b7b7b7;
+  --line: #333333;
+  --accent: #f7f7f7;
+  --accent-text: #111111;
+}
+
+.estate-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px clamp(18px, 4vw, 52px);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+}
+
+.brand-mark,
+.nav-links button,
+.icon-button,
+.nav-logout,
+.text-action,
+.primary-action,
+.secondary-action {
+  font: inherit;
+  cursor: pointer;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 800;
+}
+
+.brand-mark strong,
+.brand-mark small {
+  display: block;
+}
+
+.brand-mark small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+
+.nav-links button {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 13px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nav-links button.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-button,
+.nav-logout {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+}
+
+.nav-logout {
+  height: 38px;
+  padding: 0 14px;
+}
+
+.estate-main {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 56px;
+}
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.hero-copy,
+.filter-bar,
+.profile-preview,
+.profile-form,
+.review-form,
+.review-card,
+.property-card,
+.stats-grid article,
+.empty-state {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.06);
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(28px, 5vw, 56px);
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero-copy h1,
+.section-heading h1,
+.section-heading h2 {
+  margin: 8px 0 0;
+  color: var(--text);
+}
+
+.hero-copy h1 {
+  max-width: 680px;
+  font-size: clamp(36px, 6vw, 68px);
+  line-height: 0.96;
+}
+
+.hero-copy p {
+  max-width: 560px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.primary-action,
+.secondary-action {
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 800;
+}
+
+.primary-action {
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.secondary-action {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.hero-image {
+  position: relative;
+  min-height: 430px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.hero-image img,
+.property-card img,
+.avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-stat {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a1a1a;
+}
+
+.hero-stat strong,
+.hero-stat span {
+  display: block;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 18px 0 34px;
+}
+
+.stats-grid article {
+  padding: 18px;
+}
+
+.stats-grid strong {
+  display: block;
+  font-size: 28px;
+}
+
+.stats-grid span,
+.property-card p,
+.profile-preview p,
+.review-card p {
+  color: var(--muted);
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-heading h1,
+.section-heading h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.05;
+}
+
+.text-action {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.property-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.property-grid.compact {
+  margin-bottom: 10px;
+}
+
+.property-card {
+  overflow: hidden;
+}
+
+.property-card img {
+  display: block;
+  aspect-ratio: 1.35;
+  height: auto;
+}
+
+.property-card div {
+  padding: 16px;
+}
+
+.property-card h3 {
+  margin: 10px 0 4px;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.property-card strong {
+  display: block;
+  margin-top: 12px;
+  color: var(--text);
+  font-size: 18px;
+}
+
+.pill,
+.result-count,
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 0 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.property-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 0 !important;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.filter-bar label,
+.profile-form label,
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.filter-bar input,
+.filter-bar select,
+.profile-form input,
+.review-form input,
+.review-form select,
+.review-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  outline: none;
+}
+
+.profile-layout,
+.reviews-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.profile-preview,
+.profile-form,
+.review-form {
+  padding: 22px;
+}
+
+.avatar-frame {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 42px;
+  font-weight: 900;
+}
+
+.profile-preview h2 {
+  margin: 18px 0 4px;
+}
+
+.profile-form,
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.review-form h2 {
+  margin: 0;
+}
+
+.review-list {
+  display: grid;
+  gap: 12px;
+}
+
+.review-card {
+  padding: 18px;
+}
+
+.review-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-card span {
+  color: #d9a300;
+}
+
+.review-card h3 {
+  margin: 12px 0 8px;
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .estate-nav,
+  .section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .nav-links {
+    overflow-x: auto;
+  }
+
+  .nav-actions {
+    align-self: stretch;
+  }
+
+  .nav-logout {
+    flex: 1;
+  }
+
+  .hero-panel,
+  .property-grid,
+  .stats-grid,
+  .filter-bar,
+  .profile-layout,
+  .reviews-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-image {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 520px) {
+  .estate-main {
+    width: min(100% - 24px, 1180px);
+    padding-top: 22px;
+  }
+
+  .hero-copy {
+    padding: 24px;
+  }
+
+  .nav-links button {
+    padding: 9px 10px;
+  }
+}

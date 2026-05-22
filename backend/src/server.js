@@ -63,9 +63,14 @@ app.post('/login',async (req, res) => {
         // หา user จาก DB
         const user = await User.findOne({ email }).select('+password')
 
+        console.log(user.password)
+        console.log(password)
+
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' })
         }
+
+        
 
         const passwordchecked = await bcrypt.compare(password,user.password)
 

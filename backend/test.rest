@@ -4,8 +4,8 @@ POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-  "email": "ericclapton08@gmail.com",
-  "password": "45689785"
+  "email": "titiwat.te06@gmail.com",
+  "password": "Ty160760*"
 }
 
 ###
@@ -13,6 +13,6 @@ POST http://localhost:3000/register
 Content-Type: application/json
 
 {
-  "email": "ericclapton10@gmail.com",
-  "password": "45689785"
+  "email": "titiwat.te06@gmail.com",
+  "password": "Ty160760*"
 }

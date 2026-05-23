@@ -6,18 +6,30 @@ const emptyProfile = {
   avatar: ''
 }
 
+const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
+
+
 export default function ProfilePage() {
-  const [profile, setProfile] = useState(() => {
-    const saved = localStorage.getItem('estateProfile')
-    return saved ? JSON.parse(saved) : emptyProfile
-  })
+  const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '' })
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    if (!status) return undefined
-    const timer = window.setTimeout(() => setStatus(''), 1800)
-    return () => window.clearTimeout(timer)
-  }, [status])
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('accessToken')
+      const res = await fetch(`${apiUrl}/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProfile({
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          avatar: data.avatar || ''
+        })
+      }
+    }
+    fetchProfile()
+  }, [])
 
   function updateField(field, value) {
     setProfile((current) => ({ ...current, [field]: value }))
@@ -32,10 +44,22 @@ export default function ProfilePage() {
     reader.readAsDataURL(file)
   }
 
-  function saveProfile(event) {
+   async function saveProfile(event) {
     event.preventDefault()
-    localStorage.setItem('estateProfile', JSON.stringify(profile))
-    setStatus('บันทึกข้อมูลแล้ว')
+    const token = localStorage.getItem('accessToken')
+    const res = await fetch(`${apiUrl}/profile`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        firstName: profile.firstName,
+        lastName: profile.lastName
+      })
+    })
+    if (res.ok) setStatus('บันทึกข้อมูลแล้ว')
+    
   }
 
   const initials = `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.trim() || 'E'

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 export const authUser = async (req, res, next) => {
-  const token = req.cookies.accessToken  // ✅ cookies มี s
+  const token = req.cookies.accessToken || req.headers.authorization?.split('Bearer ')[1] // ✅ cookies มี s
 
   if (!token) {
     return res.status(401).json({
@@ -11,8 +11,8 @@ export const authUser = async (req, res, next) => {
   }
 
   try {
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-    req.user = { user: { _id: decodedToken.userId } }
+    const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
+    req.user = decodedToken
     next()  // ✅ แยกบรรทัด
   } catch (error) {
     next(error)

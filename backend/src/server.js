@@ -8,8 +8,11 @@ import jwt from 'jsonwebtoken'
 import { authUser } from '../authmiddleware/auth.js'
 import oauthRoutes from './oauth.routes.js'
 import passwordRoutes from './password.routes.js'
+import cookieParser from 'cookie-parser'
 
 const app = express() 
+
+app.use(cookieParser())
 
 app.use(cors({
     origin: ['https://myloginproject.vercel.app','http://localhost:5173','http://localhost:5174'],
@@ -108,7 +111,33 @@ app.post('/login',async (req, res) => {
     }
 })
 
+app.get('/profile', authUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
 
+// PATCH /profile — อัปเดตชื่อ
+app.patch('/profile', authUser, async (req, res) => {
+  try {
+    console.log('req.user:', req.user)        // ← เพิ่มตรงนี้
+    console.log('req.body:', req.body)        // ← เพิ่มตรงนี้
+    const { firstName, lastName } = req.body
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { firstName, lastName } },
+      { returnDocument: 'after' }
+    ).select('-password')
+    res.json(user)
+  } catch (err) {
+    console.log('error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
 
 const PORT = 3000;
 

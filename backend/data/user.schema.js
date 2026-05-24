@@ -4,6 +4,8 @@ const schema = new mongoose.Schema({
     email:String,
     password: String,
     name: String,
+    username: { type: String, unique: true, default: '' },
+
     firstName: { type: String, default: '' },
   lastName:  { type: String, default: '' },
   avatar:    { type: String, default: '' },

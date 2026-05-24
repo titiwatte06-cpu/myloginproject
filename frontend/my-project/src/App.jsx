@@ -10,7 +10,7 @@ import './styles/realEstate.css'
 
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
-const appRoutes = ['/home', '/search', '/profile', '/reviews']
+const appRoutes = ['/home', '/search', '/reviews']
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -387,6 +387,7 @@ function ChangePasswordPage({ setRoute }) {
 export default function App() {
   const [route, setRoute] = useState(window.location.pathname)
   const isAppRoute = appRoutes.includes(route)
+  const isProfileRoute = route.startsWith('/profile')
 
   useEffect(() => {
     const onPopState = () => setRoute(window.location.pathname)
@@ -395,16 +396,21 @@ export default function App() {
   }, [])
 
   return (
-    <div className={`page-shell ${isAppRoute ? 'estate-shell' : ''}`}>
+    <div className={`page-shell ${isAppRoute  || isProfileRoute ? 'estate-shell' : ''}`}>
       <style>{styles}</style>
       {isAppRoute ? (
         <AppLayout route={route} setRoute={setRoute}>
           {route === '/search' && <SearchPage />}
-          {route === '/profile' && <ProfilePage />}
           {route === '/reviews' && <ReviewsPage />}
           {route === '/home' && <HomePage setRoute={setRoute} />}
         </AppLayout>
-      ) : route === '/change-password' ? (
+      ) : isProfileRoute ? (
+        <AppLayout route={route} setRoute={setRoute}>
+          <ProfilePage username={route.split('/profile/')[1]} setRoute={setRoute} />
+        </AppLayout>
+      )
+      
+      : route === '/change-password' ? (
         <ChangePasswordPage setRoute={setRoute} />
       ) : (
         <AuthPage setRoute={setRoute} />

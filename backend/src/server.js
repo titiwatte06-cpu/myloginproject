@@ -42,8 +42,9 @@ app.post('/register', async (req, res) => {
         // hash password ก่อน
         const passwordHashed = await bcrypt.hash(password, saltrounds)
 
+        const username = email.split('@')[0]
         // สร้าง user ใหม่ — ใส่ passwordHashed ไม่ใช่ password
-        const newUser = new User({ email, password: passwordHashed })
+        const newUser = new User({ email, password: passwordHashed , username})
         await newUser.save()
 
         const token = await jwt.sign({ id: newUser._id },process.env.SECRET_KEY,{expiresIn:"7d"})

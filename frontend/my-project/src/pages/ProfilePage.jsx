@@ -9,7 +9,7 @@ const emptyProfile = {
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
 
 
-export default function ProfilePage() {
+export default function ProfilePage({ username }) {
   const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '' })
   const [status, setStatus] = useState('')
 
@@ -21,6 +21,11 @@ export default function ProfilePage() {
       })
       if (res.ok) {
         const data = await res.json()
+
+        if (data.username) {
+          window.history.replaceState({}, '', `/profile/${data.username}`)
+        }
+
         setProfile({
           firstName: data.firstName || '',
           lastName: data.lastName || '',

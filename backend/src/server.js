@@ -108,7 +108,12 @@ app.post('/login',async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
         })
         console.log(process.env.NODE_ENV)
-        res.status(200).json({ message: 'Login successful', user , token})
+        res.status(200).json({
+            success:true, 
+            message: 'Login successful',
+            token : token,
+            user 
+            })
 
     } catch (err) {
         console.log(err)

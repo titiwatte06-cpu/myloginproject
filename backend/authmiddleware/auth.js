@@ -5,15 +5,14 @@ export const authUser = async (req, res, next) => {
 
   if (!token) {
     return res.status(401).json({
-      success: false,               // ✅ success + :
-      message: "Access denied, No token!"
+      success: false,               
     })
   }
 
   try {
     const decodedToken = jwt.verify(token, process.env.SECRET_KEY)
     req.user = decodedToken
-    next()  // ✅ แยกบรรทัด
+    next()  
   } catch (error) {
     next(error)
   }

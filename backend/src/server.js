@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import connectDB from '../mongodb/connectDB.js'
 import schema from '../data/user.schema.js'
 import User from '../data/user.model.js'
@@ -9,6 +11,8 @@ import { authUser } from '../authmiddleware/auth.js'
 import oauthRoutes from './oauth.routes.js'
 import passwordRoutes from './password.routes.js'
 import cookieParser from 'cookie-parser'
+
+
 
 const app = express() 
 
@@ -139,6 +143,9 @@ app.patch('/profile', authUser, async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 })
+
+
+connectDB()
 
 const PORT = 3000;
 

@@ -7,7 +7,9 @@ import SearchPage from './pages/SearchPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import ReviewsPage from './pages/ReviewsPage.jsx'
 import './styles/realEstate.css'
-
+import PostPropertyForm from './components/PostPropertyForm'
+import MyListings from './components/MyListings'
+import PropertyDetail from './components/PropertyDetail'
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
 const appRoutes = ['/home', '/search', '/reviews']

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { properties, formatPrice } from './pageData'
+import { createProperty, updateProperty, deleteProperty } from '../services/propertyApi'
 
 const propertyTypes = ['ทั้งหมด', 'บ้านเดี่ยว', 'คอนโด', 'ทาวน์เฮาส์']
 
@@ -7,6 +8,13 @@ export default function SearchPage() {
   const [type, setType] = useState('ทั้งหมด')
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedPropertyId, setSelectedPropertyId] = useState('')
+  const [formData, setFormData] = useState({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' })
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
 
   const filteredProperties = useMemo(() => {
     const min = Number(minPrice) || 0
@@ -18,8 +26,384 @@ export default function SearchPage() {
     })
   }, [type, minPrice, maxPrice])
 
+  // CRUD Handlers
+  const handleCreate = async () => {
+    if (!formData.title || !formData.location || !formData.price) {
+      setMessage('กรุณากรอกข้อมูลให้ครบ')
+      return
+    }
+    setLoading(true)
+    try {
+      await createProperty({
+        title: formData.title,
+        location: formData.location,
+        price: Number(formData.price),
+        type: formData.type || 'บ้านเดี่ยว',
+        beds: Number(formData.beds) || 0,
+        baths: Number(formData.baths) || 0,
+        area: Number(formData.area) || 0,
+        image: formData.image || 'https://via.placeholder.com/300x200'
+      })
+      setMessage('✓ เพิ่มที่พักอาศัยสำเร็จ')
+      setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' })
+      setTimeout(() => setShowCreateModal(false), 1500)
+    } catch (error) {
+      setMessage('✗ เกิดข้อผิดพลาด: ' + error.message)
+    }
+    setLoading(false)
+  }
+
+  const handleUpdate = async () => {
+    if (!selectedPropertyId) {
+      setMessage('กรุณาระบุ ID ที่พักอาศัย')
+      return
+    }
+    if (!formData.title || !formData.location || !formData.price) {
+      setMessage('กรุณากรอกข้อมูลให้ครบ')
+      return
+    }
+    setLoading(true)
+    try {
+      await updateProperty(selectedPropertyId, {
+        title: formData.title,
+        location: formData.location,
+        price: Number(formData.price),
+        type: formData.type || 'บ้านเดี่ยว',
+        beds: Number(formData.beds) || 0,
+        baths: Number(formData.baths) || 0,
+        area: Number(formData.area) || 0,
+        image: formData.image || 'https://via.placeholder.com/300x200'
+      })
+      setMessage('✓ อัปเดตที่พักอาศัยสำเร็จ')
+      setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' })
+      setSelectedPropertyId('')
+      setTimeout(() => setShowUpdateModal(false), 1500)
+    } catch (error) {
+      setMessage('✗ เกิดข้อผิดพลาด: ' + error.message)
+    }
+    setLoading(false)
+  }
+
+  const handleDelete = async () => {
+    if (!selectedPropertyId) {
+      setMessage('กรุณาระบุ ID ที่พักอาศัย')
+      return
+    }
+    setLoading(true)
+    try {
+      await deleteProperty(selectedPropertyId)
+      setMessage('✓ ลบที่พักอาศัยสำเร็จ')
+      setSelectedPropertyId('')
+      setTimeout(() => setShowDeleteModal(false), 1500)
+    } catch (error) {
+      setMessage('✗ เกิดข้อผิดพลาด: ' + error.message)
+    }
+    setLoading(false)
+  }
+
   return (
     <section className="search-page">
+      
+
+      {/* CREATE MODAL */}
+      {showCreateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <h2>เพิ่มที่พักอาศัยใหม่</h2>
+            <input
+              type="text"
+              placeholder="ชื่อ"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="text"
+              placeholder="สถานที่"
+              value={formData.location}
+              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="ราคา"
+              value={formData.price}
+              onChange={(e) => setFormData({...formData, price: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            >
+              <option value="">เลือกประเภท</option>
+              <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+              <option value="คอนโด">คอนโด</option>
+              <option value="ทาวน์เฮาส์">ทาวน์เฮาส์</option>
+            </select>
+            <input
+              type="number"
+              placeholder="จำนวนห้องนอน"
+              value={formData.beds}
+              onChange={(e) => setFormData({...formData, beds: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="จำนวนห้องน้ำ"
+              value={formData.baths}
+              onChange={(e) => setFormData({...formData, baths: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="พื้นที่ (ตร.ม.)"
+              value={formData.area}
+              onChange={(e) => setFormData({...formData, area: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="text"
+              placeholder="URL รูปภาพ"
+              value={formData.image}
+              onChange={(e) => setFormData({...formData, image: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            {message && (
+              <div style={{
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
+                color: message.includes('✓') ? '#155724' : '#721c24',
+                borderRadius: '4px',
+                textAlign: 'center'
+              }}>
+                {message}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowCreateModal(false); setMessage(''); setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' }); }}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+              >
+                {loading ? 'กำลังเพิ่ม...' : 'เพิ่ม'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* UPDATE MODAL */}
+      {showUpdateModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <h2>อัปเดตที่พักอาศัย</h2>
+            <input
+              type="text"
+              placeholder="ID ที่พักอาศัย"
+              value={selectedPropertyId}
+              onChange={(e) => setSelectedPropertyId(e.target.value)}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="text"
+              placeholder="ชื่อ"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="text"
+              placeholder="สถานที่"
+              value={formData.location}
+              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="ราคา"
+              value={formData.price}
+              onChange={(e) => setFormData({...formData, price: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({...formData, type: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            >
+              <option value="">เลือกประเภท</option>
+              <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
+              <option value="คอนโด">คอนโด</option>
+              <option value="ทาวน์เฮาส์">ทาวน์เฮาส์</option>
+            </select>
+            <input
+              type="number"
+              placeholder="จำนวนห้องนอน"
+              value={formData.beds}
+              onChange={(e) => setFormData({...formData, beds: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="จำนวนห้องน้ำ"
+              value={formData.baths}
+              onChange={(e) => setFormData({...formData, baths: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="number"
+              placeholder="พื้นที่ (ตร.ม.)"
+              value={formData.area}
+              onChange={(e) => setFormData({...formData, area: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            <input
+              type="text"
+              placeholder="URL รูปภาพ"
+              value={formData.image}
+              onChange={(e) => setFormData({...formData, image: e.target.value})}
+              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            {message && (
+              <div style={{
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
+                color: message.includes('✓') ? '#155724' : '#721c24',
+                borderRadius: '4px',
+                textAlign: 'center'
+              }}>
+                {message}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowUpdateModal(false); setMessage(''); setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' }); setSelectedPropertyId(''); }}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={handleUpdate}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+              >
+                {loading ? 'กำลังอัปเดต...' : 'อัปเดต'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE MODAL */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '400px',
+            width: '90%'
+          }}>
+            <h2>ลบที่พักอาศัย</h2>
+            <p>ป้อน ID ของที่พักอาศัยที่ต้องการลบ:</p>
+            <input
+              type="text"
+              placeholder="ID ที่พักอาศัย"
+              value={selectedPropertyId}
+              onChange={(e) => setSelectedPropertyId(e.target.value)}
+              style={{ width: '100%', padding: '8px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #ddd' }}
+            />
+            {message && (
+              <div style={{
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
+                color: message.includes('✓') ? '#155724' : '#721c24',
+                borderRadius: '4px',
+                textAlign: 'center'
+              }}>
+                {message}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => { setShowDeleteModal(false); setMessage(''); setSelectedPropertyId(''); }}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={loading}
+                style={{ padding: '10px 20px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+              >
+                {loading ? 'กำลังลบ...' : 'ยืนยันลบ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="section-heading">
         <div>
           <span className="eyebrow">Property search</span>

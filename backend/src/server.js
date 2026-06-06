@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken'
 import { authUser } from '../authmiddleware/auth.js'
 import oauthRoutes from './oauth.routes.js'
 import passwordRoutes from './password.routes.js'
+import propertyRoutes from './property.routes.js'
 import cookieParser from 'cookie-parser'
 
 
@@ -26,6 +27,7 @@ app.use(cors({
 app.use(express.json())
 app.use(oauthRoutes)
 app.use(passwordRoutes)
+app.use(propertyRoutes)
 
 
 

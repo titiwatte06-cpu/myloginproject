@@ -395,6 +395,27 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
 
+  // เพิ่มตรงนี้
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) return
+
+    fetch(`${apiUrl}/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include'
+    })
+    .then(res => {
+      if (!res.ok) {
+        localStorage.removeItem('accessToken')
+        navigate('/', setRoute)
+      }
+    })
+    .catch(() => {
+      localStorage.removeItem('accessToken')
+      navigate('/', setRoute)
+    })
+  }, [])
+
   return (
     <div className={`page-shell ${isAppRoute  || isProfileRoute ? 'estate-shell' : ''}`}>
       <style>{styles}</style>

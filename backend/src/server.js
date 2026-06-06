@@ -149,6 +149,15 @@ app.patch('/profile', authUser, async (req, res) => {
   }
 })
 
+app.get('/me', authUser, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password')
+    res.status(200).json({ success: true, user })
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
 
 connectDB()
 

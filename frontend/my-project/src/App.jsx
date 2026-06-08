@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { Routes, Route, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import AppLayout from './pages/AppLayout.jsx'
 import HomePage from './pages/HomePage.jsx'
 import SearchPage from './pages/SearchPage.jsx'
@@ -9,19 +10,32 @@ import ChangePasswordPage from './pages/ChangePasswordPage.jsx'
 import './styles/realEstate.css'
 import { authStyles } from './styles/authStyles.js'
 import { apiUrl } from './config/api.js'
-import { appRoutes, navigate } from './utils/routing.js'
+import { appRoutes } from './utils/routing.js'
 
+
+function RootShell() {
+  const { pathname } = useLocation()
+  const isAppRoute = appRoutes.includes(pathname)
+  const isProfileRoute = pathname.startsWith('/profile')
+
+  return (
+    <div className={`page-shell ${isAppRoute || isProfileRoute ? 'estate-shell' : ''}`}>
+      <style>{authStyles}</style>
+      <Outlet />
+    </div>
+  )
+}
+
+function ProtectedLayout() {
+  return (
+    <AppLayout>
+      <Outlet />
+    </AppLayout>
+  )
+}
 
 export default function App() {
-  const [route, setRoute] = useState(window.location.pathname)
-  const isAppRoute = appRoutes.includes(route)
-  const isProfileRoute = route.startsWith('/profile')
-
-  useEffect(() => {
-    const onPopState = () => setRoute(window.location.pathname)
-    window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
-  }, [])
+  const navigate = useNavigate()
 
   // เพิ่มตรงนี้
   useEffect(() => {
@@ -35,35 +49,28 @@ export default function App() {
     .then(res => {
       if (!res.ok) {
         localStorage.removeItem('accessToken')
-        navigate('/', setRoute)
+        navigate('/')
       }
     })
     .catch(() => {
       localStorage.removeItem('accessToken')
-      navigate('/', setRoute)
+      navigate('/')
     })
-  }, [])
+  }, [navigate])
 
   return (
-    <div className={`page-shell ${isAppRoute  || isProfileRoute ? 'estate-shell' : ''}`}>
-      <style>{authStyles}</style>
-      {isAppRoute ? (
-        <AppLayout route={route} setRoute={setRoute}>
-          {route === '/search' && <SearchPage />}
-          {route === '/reviews' && <ReviewsPage />}
-          {route === '/home' && <HomePage setRoute={setRoute} />}
-        </AppLayout>
-      ) : isProfileRoute ? (
-        <AppLayout route={route} setRoute={setRoute}>
-          <ProfilePage username={route.split('/profile/')[1]} setRoute={setRoute} />
-        </AppLayout>
-      )
-
-      : route === '/change-password' ? (
-        <ChangePasswordPage setRoute={setRoute} />
-      ) : (
-        <AuthPage setRoute={setRoute} />
-      )}
-    </div>
+    <Routes>
+      <Route element={<RootShell />}>
+        <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route element={<ProtectedLayout />}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+        </Route>
+        <Route path="*" element={<AuthPage />} />
+      </Route>
+    </Routes>
   )
 }

@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Logo } from '../icon/Icon.jsx';
 import { apiUrl } from '../config/api.js'
 import { validatePassword } from '../utils/validators.js'
-import { navigate } from '../utils/routing.js'
 
-export default function ChangePasswordPage({ setRoute }) {
+const inputBase = 'w-full border-[1.5px] border-neutral-200 rounded-[10px] px-3.5 py-2.5 text-sm bg-neutral-50 text-neutral-900 outline-none transition-all box-border focus:border-neutral-900 focus:bg-white focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)]'
+
+export default function ChangePasswordPage() {
+  const navigate = useNavigate()
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -55,47 +58,51 @@ export default function ChangePasswordPage({ setRoute }) {
   }
 
   return (
-    <div className="auth-card">
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+    <div className="bg-white rounded-[20px] border border-neutral-200 px-8 py-10 w-full max-w-[380px] shadow-[0_4px_40px_rgba(0,0,0,0.07)] animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)]">
+      <div className="flex justify-center mb-5">
         <Logo />
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1a1a1a', margin: 0, marginBottom: 4 }}>
+      <div className="mb-6">
+        <h1 className="text-[22px] font-bold text-neutral-900 m-0 mb-1">
           Change password
         </h1>
-        <p style={{ fontSize: 13.5, color: '#777', margin: 0 }}>
+        <p className="text-[13.5px] text-neutral-500 m-0">
           Update your account password
         </p>
       </div>
 
-      {status && <div className={`status ${status.type}`}>{status.text}</div>}
+      {status && (
+        <div className={`rounded-[10px] px-3 py-2.5 text-[13px] leading-snug mb-4 ${status.type === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'}`}>
+          {status.text}
+        </div>
+      )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
-        <div className="field-wrap">
-          <label className="field-label">Current password</label>
+      <div className="flex flex-col gap-3.5 mb-[18px]">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-neutral-900">Current password</label>
           <input
-            className="field-input"
+            className={inputBase}
             type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
           />
         </div>
 
-        <div className="field-wrap">
-          <label className="field-label">New password</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-neutral-900">New password</label>
           <input
-            className="field-input"
+            className={inputBase}
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
         </div>
 
-        <div className="field-wrap">
-          <label className="field-label">Confirm new password</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-semibold text-neutral-900">Confirm new password</label>
           <input
-            className="field-input"
+            className={inputBase}
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -103,12 +110,12 @@ export default function ChangePasswordPage({ setRoute }) {
         </div>
       </div>
 
-      <button className="btn-primary" style={{ marginBottom: 16 }} onClick={submit} disabled={loading}>
+      <button className="w-full bg-neutral-900 text-white border-none rounded-[10px] py-[13px] text-sm font-semibold cursor-pointer transition-all hover:bg-neutral-700 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-65 disabled:translate-y-0 mb-4" onClick={submit} disabled={loading}>
         {loading ? 'Please wait...' : 'Save password'}
       </button>
 
-      <p className="toggle-text">
-        <button className="toggle-link" onClick={() => navigate('/', setRoute)}>Back to login</button>
+      <p className="text-[13px] text-neutral-500 text-center m-0">
+        <button className="text-neutral-900 text-[13px] font-medium cursor-pointer bg-transparent border-none p-0" onClick={() => navigate('/')}>Back to login</button>
       </p>
     </div>
   )

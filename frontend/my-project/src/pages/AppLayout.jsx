@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
 
@@ -8,12 +9,9 @@ const navItems = [
   { path: '/reviews', label: 'Reviews' },
 ]
 
-function navigate(path, setRoute) {
-  window.history.pushState({}, '', path)
-  setRoute(path)
-}
-
-export default function AppLayout({ route, setRoute, children }) {
+export default function AppLayout({ children }) {
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [theme, setTheme] = useState(() => localStorage.getItem('estateTheme') || 'light')
   const [avatar, setAvatar] = useState(null)
   const [initials, setInitials] = useState('U')
@@ -40,13 +38,13 @@ export default function AppLayout({ route, setRoute, children }) {
 
   function logout() {
     localStorage.removeItem('accessToken')
-    navigate('/', setRoute)
+    navigate('/')
   }
 
   return (
     <div className="estate-app" data-theme={theme}>
       <header className="estate-nav">
-        <button className="brand-mark" onClick={() => navigate('/home', setRoute)} aria-label="Go home">
+        <button className="brand-mark" onClick={() => navigate('/home')} aria-label="Go home">
           <span className="brand-icon">E</span>
           <span>
             <strong>Estate</strong>
@@ -58,8 +56,8 @@ export default function AppLayout({ route, setRoute, children }) {
           {navItems.map((item) => (
             <button
               key={item.path}
-              className={route === item.path ? 'active' : ''}
-              onClick={() => navigate(item.path, setRoute)}
+              className={pathname === item.path ? 'active' : ''}
+              onClick={() => navigate(item.path)}
             >
               {item.label}
             </button>
@@ -70,19 +68,13 @@ export default function AppLayout({ route, setRoute, children }) {
           <button className="icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label="Toggle theme">
             {theme === 'light' ? 'D' : 'L'}
           </button>
-          
-          <button 
-            onClick={() => navigate('/profile', setRoute)}
-            style={{
-              width: 34, height: 34, borderRadius: '50%',
-              overflow: 'hidden', border: 'none', cursor: 'pointer',
-              background: 'var(--accent)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              fontWeight: 700, color: 'var(--accent-text)'
-            }}
+
+          <button
+            onClick={() => navigate('/profile')}
+            className="w-8.5 h-8.5 rounded-full overflow-hidden border-none cursor-pointer bg-(--accent) flex items-center justify-center font-bold text-(--accent-text)"
           >
-            {avatar 
-              ? <img src={avatar} style={{width:'100%', height:'100%', objectFit:'cover'}} /> 
+            {avatar
+              ? <img src={avatar} className="w-full h-full object-cover" />
               : initials
             }
           </button>

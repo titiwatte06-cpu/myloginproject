@@ -4,6 +4,18 @@ import { createProperty, updateProperty, deleteProperty } from '../services/prop
 
 const propertyTypes = ['ทั้งหมด', 'บ้านเดี่ยว', 'คอนโด', 'ทาวน์เฮาส์']
 
+const modalOverlay = 'fixed inset-0 bg-black/50 flex justify-center items-center z-[1000]'
+const modalCard = 'bg-white p-[30px] rounded-lg max-w-[500px] w-[90%] max-h-[90vh] overflow-y-auto'
+const modalCardSmall = 'bg-white p-[30px] rounded-lg max-w-[400px] w-[90%]'
+const formInput = 'w-full p-2 mb-2.5 rounded border border-[#ddd]'
+const actionRow = 'flex gap-2.5 justify-end'
+const cancelBtn = 'px-5 py-2.5 bg-[#999] text-white border-none rounded cursor-pointer'
+const actionBtnBase = 'px-5 py-2.5 text-white border-none rounded'
+
+function messageBox(msg) {
+  return `p-2.5 mb-2.5 rounded text-center ${msg.includes('✓') ? 'bg-[#d4edda] text-[#155724]' : 'bg-[#f8d7da] text-[#721c24]'}`
+}
+
 export default function SearchPage() {
   const [type, setType] = useState('ทั้งหมด')
   const [minPrice, setMinPrice] = useState('')
@@ -107,53 +119,34 @@ export default function SearchPage() {
 
       {/* CREATE MODAL */}
       {showCreateModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '8px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '90vh',
-            overflowY: 'auto'
-          }}>
+        <div className={modalOverlay}>
+          <div className={modalCard}>
             <h2>เพิ่มที่พักอาศัยใหม่</h2>
             <input
               type="text"
               placeholder="ชื่อ"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="text"
               placeholder="สถานที่"
               value={formData.location}
               onChange={(e) => setFormData({...formData, location: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="ราคา"
               value={formData.price}
               onChange={(e) => setFormData({...formData, price: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <select
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             >
               <option value="">เลือกประเภท</option>
               <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
@@ -165,53 +158,46 @@ export default function SearchPage() {
               placeholder="จำนวนห้องนอน"
               value={formData.beds}
               onChange={(e) => setFormData({...formData, beds: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="จำนวนห้องน้ำ"
               value={formData.baths}
               onChange={(e) => setFormData({...formData, baths: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="พื้นที่ (ตร.ม.)"
               value={formData.area}
               onChange={(e) => setFormData({...formData, area: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="text"
               placeholder="URL รูปภาพ"
               value={formData.image}
               onChange={(e) => setFormData({...formData, image: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             {message && (
-              <div style={{
-                padding: '10px',
-                marginBottom: '10px',
-                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
-                color: message.includes('✓') ? '#155724' : '#721c24',
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
+              <div className={messageBox(message)}>
                 {message}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div className={actionRow}>
               <button
                 onClick={() => { setShowCreateModal(false); setMessage(''); setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' }); }}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className={cancelBtn}
               >
                 ยกเลิก
               </button>
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+                className={`${actionBtnBase} bg-[#4CAF50] ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 {loading ? 'กำลังเพิ่ม...' : 'เพิ่ม'}
               </button>
@@ -222,60 +208,41 @@ export default function SearchPage() {
 
       {/* UPDATE MODAL */}
       {showUpdateModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '8px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '90vh',
-            overflowY: 'auto'
-          }}>
+        <div className={modalOverlay}>
+          <div className={modalCard}>
             <h2>อัปเดตที่พักอาศัย</h2>
             <input
               type="text"
               placeholder="ID ที่พักอาศัย"
               value={selectedPropertyId}
               onChange={(e) => setSelectedPropertyId(e.target.value)}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="text"
               placeholder="ชื่อ"
               value={formData.title}
               onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="text"
               placeholder="สถานที่"
               value={formData.location}
               onChange={(e) => setFormData({...formData, location: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="ราคา"
               value={formData.price}
               onChange={(e) => setFormData({...formData, price: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <select
               value={formData.type}
               onChange={(e) => setFormData({...formData, type: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             >
               <option value="">เลือกประเภท</option>
               <option value="บ้านเดี่ยว">บ้านเดี่ยว</option>
@@ -287,53 +254,46 @@ export default function SearchPage() {
               placeholder="จำนวนห้องนอน"
               value={formData.beds}
               onChange={(e) => setFormData({...formData, beds: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="จำนวนห้องน้ำ"
               value={formData.baths}
               onChange={(e) => setFormData({...formData, baths: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="number"
               placeholder="พื้นที่ (ตร.ม.)"
               value={formData.area}
               onChange={(e) => setFormData({...formData, area: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             <input
               type="text"
               placeholder="URL รูปภาพ"
               value={formData.image}
               onChange={(e) => setFormData({...formData, image: e.target.value})}
-              style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className={formInput}
             />
             {message && (
-              <div style={{
-                padding: '10px',
-                marginBottom: '10px',
-                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
-                color: message.includes('✓') ? '#155724' : '#721c24',
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
+              <div className={messageBox(message)}>
                 {message}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div className={actionRow}>
               <button
                 onClick={() => { setShowUpdateModal(false); setMessage(''); setFormData({ title: '', location: '', price: '', type: '', beds: '', baths: '', area: '', image: '' }); setSelectedPropertyId(''); }}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className={cancelBtn}
               >
                 ยกเลิก
               </button>
               <button
                 onClick={handleUpdate}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#2196F3', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+                className={`${actionBtnBase} bg-[#2196F3] ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 {loading ? 'กำลังอัปเดต...' : 'อัปเดต'}
               </button>
@@ -344,25 +304,8 @@ export default function SearchPage() {
 
       {/* DELETE MODAL */}
       {showDeleteModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '8px',
-            maxWidth: '400px',
-            width: '90%'
-          }}>
+        <div className={modalOverlay}>
+          <div className={modalCardSmall}>
             <h2>ลบที่พักอาศัย</h2>
             <p>ป้อน ID ของที่พักอาศัยที่ต้องการลบ:</p>
             <input
@@ -370,32 +313,25 @@ export default function SearchPage() {
               placeholder="ID ที่พักอาศัย"
               value={selectedPropertyId}
               onChange={(e) => setSelectedPropertyId(e.target.value)}
-              style={{ width: '100%', padding: '8px', marginBottom: '20px', borderRadius: '4px', border: '1px solid #ddd' }}
+              className="w-full p-2 mb-5 rounded border border-[#ddd]"
             />
             {message && (
-              <div style={{
-                padding: '10px',
-                marginBottom: '10px',
-                backgroundColor: message.includes('✓') ? '#d4edda' : '#f8d7da',
-                color: message.includes('✓') ? '#155724' : '#721c24',
-                borderRadius: '4px',
-                textAlign: 'center'
-              }}>
+              <div className={messageBox(message)}>
                 {message}
               </div>
             )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <div className={actionRow}>
               <button
                 onClick={() => { setShowDeleteModal(false); setMessage(''); setSelectedPropertyId(''); }}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#999', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className={cancelBtn}
               >
                 ยกเลิก
               </button>
               <button
                 onClick={handleDelete}
                 disabled={loading}
-                style={{ padding: '10px 20px', backgroundColor: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+                className={`${actionBtnBase} bg-[#f44336] ${loading ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 {loading ? 'กำลังลบ...' : 'ยืนยันลบ'}
               </button>

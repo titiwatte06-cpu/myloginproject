@@ -1,11 +1,8 @@
+import { useNavigate } from 'react-router-dom'
 import { properties, formatPrice } from './pageData'
 
-function navigate(path, setRoute) {
-  window.history.pushState({}, '', path)
-  setRoute(path)
-}
-
-export default function HomePage({ setRoute }) {
+export default function HomePage() {
+  const navigate = useNavigate()
   const featured = properties.slice(0, 3)
 
   return (
@@ -16,8 +13,8 @@ export default function HomePage({ setRoute }) {
           <h1>Find a home that feels calm, sharp, and ready for real life.</h1>
           <p>สำรวจบ้าน คอนโด และทาวน์เฮาส์ที่คัดมาให้เหมาะกับชีวิตเมืองยุคใหม่ พร้อมแดชบอร์ดที่ใช้งานง่ายหลังเข้าสู่ระบบ</p>
           <div className="hero-actions">
-            <button className="primary-action" onClick={() => navigate('/search', setRoute)}>Search properties</button>
-            <button className="secondary-action" onClick={() => navigate('/reviews', setRoute)}>Read reviews</button>
+            <button className="primary-action" onClick={() => navigate('/search')}>Search properties</button>
+            <button className="secondary-action" onClick={() => navigate('/reviews')}>Read reviews</button>
           </div>
         </div>
         <div className="hero-image">
@@ -49,7 +46,7 @@ export default function HomePage({ setRoute }) {
           <span className="eyebrow">Featured</span>
           <h2>Recommended homes</h2>
         </div>
-        <button className="text-action" onClick={() => navigate('/search', setRoute)}>View all</button>
+        <button className="text-action" onClick={() => navigate('/search')}>View all</button>
       </div>
 
       <div className="property-grid compact">

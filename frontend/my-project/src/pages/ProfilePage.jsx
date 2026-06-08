@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const emptyProfile = {
   firstName: '',
@@ -9,7 +10,8 @@ const emptyProfile = {
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
 
 
-export default function ProfilePage({ username }) {
+export default function ProfilePage() {
+  const navigate = useNavigate()
   const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '' })
   const [status, setStatus] = useState('')
 
@@ -23,7 +25,7 @@ export default function ProfilePage({ username }) {
         const data = await res.json()
 
         if (data.username) {
-          window.history.replaceState({}, '', `/profile/${data.username}`)
+          navigate(`/profile/${data.username}`, { replace: true })
         }
 
         setProfile({
@@ -34,7 +36,7 @@ export default function ProfilePage({ username }) {
       }
     }
     fetchProfile()
-  }, [])
+  }, [navigate])
 
   function updateField(field, value) {
     setProfile((current) => ({ ...current, [field]: value }))

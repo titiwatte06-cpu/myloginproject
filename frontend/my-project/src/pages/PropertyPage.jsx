@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import PropertyManagement from './PropertyManagement';
+import PropertyManagement from '../components/PropertyManagement';
 
 export default function PropertyPage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);

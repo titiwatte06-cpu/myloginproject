@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage.jsx'
 import SearchPage from './pages/SearchPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import ReviewsPage from './pages/ReviewsPage.jsx'
+import PropertyPage from './pages/PropertyPage.jsx'
 import AuthPage from './pages/AuthPage.jsx'
 import ChangePasswordPage from './pages/ChangePasswordPage.jsx'
 import './styles/realEstate.css'
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
+          <Route path="/my-listings" element={<PropertyPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:username" element={<ProfilePage />} />
         </Route>

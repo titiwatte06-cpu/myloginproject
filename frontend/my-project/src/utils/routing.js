@@ -1,1 +1,1 @@
-export const appRoutes = ['/home', '/search', '/reviews']
+export const appRoutes = ['/home', '/search', '/reviews', '/my-listings']

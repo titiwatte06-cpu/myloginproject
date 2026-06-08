@@ -137,6 +137,46 @@
   padding: 0 14px;
 }
 
+.nav-user {
+  position: relative;
+}
+
+.nav-user-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 170px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.12);
+}
+
+.nav-user-menu button {
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-user-menu button:hover,
+.nav-user-menu button.active {
+  background: var(--surface-2);
+}
+
+.nav-user-menu-logout {
+  color: var(--danger, #d9534f);
+}
+
 .estate-main {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;

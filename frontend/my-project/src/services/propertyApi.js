@@ -132,6 +132,44 @@ export async function fetchUserProperties() {
     }
 }
 
+// Get public profile by username
+export async function fetchUserProfile(username) {
+    try {
+        const response = await fetch(`${apiUrl}/profile/${username}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+    }
+}
+
+// Get a user's listings by username
+export async function fetchPropertiesByUsername(username) {
+    try {
+        const response = await fetch(`${apiUrl}/api/users/${username}/properties`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch user listings');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching user listings:', error);
+        throw error;
+    }
+}
+
 // Add review to property
 export async function addReview(propertyId, reviewData) {
     try {

@@ -4,6 +4,7 @@ const navItems = [
   { path: '/home', label: 'Home' },
   { path: '/search', label: 'Search' },
   { path: '/reviews', label: 'Reviews' },
+  { path: '/messages', label: 'Messages' },
 ]
 
 const userMenuItems = [
@@ -48,7 +49,7 @@ export default function EstateNavbar({ pathname, navigate, theme, setTheme, avat
         {navItems.map((item) => (
           <button
             key={item.path}
-            className={pathname === item.path ? 'active' : ''}
+            className={pathname.startsWith(item.path) ? 'active' : ''}
             onClick={() => navigate(item.path)}
           >
             {item.label}

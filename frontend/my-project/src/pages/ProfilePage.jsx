@@ -1,42 +1,96 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-const emptyProfile = {
-  firstName: '',
-  lastName: '',
-  avatar: ''
-}
+import { useNavigate, useParams } from 'react-router-dom'
+import { fetchUserProfile, fetchPropertiesByUsername } from '../services/propertyApi'
+import { formatPrice, mapProperty } from './pageData'
 
 const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
 
-
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '' })
+  const { username } = useParams()
+  const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '', username: '' })
   const [status, setStatus] = useState('')
+  const [isOwner, setIsOwner] = useState(false)
+  const [listings, setListings] = useState([])
+  const [loadingListings, setLoadingListings] = useState(true)
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    let cancelled = false
+
+    const load = async () => {
       const token = localStorage.getItem('accessToken')
-      const res = await fetch(`${apiUrl}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.ok) {
-        const data = await res.json()
+      let myData = null
 
-        if (data.username) {
-          navigate(`/profile/${data.username}`, { replace: true })
+      if (token) {
+        const res = await fetch(`${apiUrl}/profile`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (res.ok) myData = await res.json()
+      }
+
+      if (cancelled) return
+
+      if (!username) {
+        if (myData) {
+          setProfile({
+            firstName: myData.firstName || '',
+            lastName: myData.lastName || '',
+            avatar: myData.avatar || '',
+            username: myData.username || ''
+          })
+          setIsOwner(true)
+          if (myData.username) navigate(`/profile/${myData.username}`, { replace: true })
         }
+        return
+      }
 
+      const owner = myData?.username === username
+      setIsOwner(owner)
+
+      if (owner) {
+        setProfile({
+          firstName: myData.firstName || '',
+          lastName: myData.lastName || '',
+          avatar: myData.avatar || '',
+          username: myData.username || ''
+        })
+        return
+      }
+
+      try {
+        const data = await fetchUserProfile(username)
+        if (cancelled) return
         setProfile({
           firstName: data.firstName || '',
           lastName: data.lastName || '',
-          avatar: data.avatar || ''
+          avatar: data.avatar || '',
+          username: data.username || username
         })
+      } catch {
+        if (!cancelled) setProfile({ firstName: '', lastName: '', avatar: '', username })
       }
     }
-    fetchProfile()
-  }, [navigate])
+
+    load()
+    return () => { cancelled = true }
+  }, [username, navigate])
+
+  useEffect(() => {
+    if (!username) return
+    let cancelled = false
+    setLoadingListings(true)
+    fetchPropertiesByUsername(username)
+      .then((data) => {
+        if (!cancelled) setListings((data.properties || []).map(mapProperty))
+      })
+      .catch(() => {
+        if (!cancelled) setListings([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingListings(false)
+      })
+    return () => { cancelled = true }
+  }, [username])
 
   function updateField(field, value) {
     setProfile((current) => ({ ...current, [field]: value }))
@@ -51,7 +105,7 @@ export default function ProfilePage() {
     reader.readAsDataURL(file)
   }
 
-   async function saveProfile(event) {
+  async function saveProfile(event) {
     event.preventDefault()
     const token = localStorage.getItem('accessToken')
     const res = await fetch(`${apiUrl}/profile`, {
@@ -66,17 +120,17 @@ export default function ProfilePage() {
       })
     })
     if (res.ok) setStatus('บันทึกข้อมูลแล้ว')
-    
   }
 
   const initials = `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.trim() || 'E'
+  const displayName = profile.firstName || profile.lastName ? `${profile.firstName} ${profile.lastName}`.trim() : (profile.username || 'Your Name')
 
   return (
     <section className="profile-page">
       <div className="section-heading">
         <div>
           <span className="eyebrow">Profile</span>
-          <h1>ข้อมูลผู้ใช้</h1>
+          <h1>{isOwner ? 'ข้อมูลผู้ใช้' : `โปรไฟล์ของ ${displayName}`}</h1>
         </div>
         {status && <span className="save-status">{status}</span>}
       </div>
@@ -86,26 +140,70 @@ export default function ProfilePage() {
           <div className="avatar-frame">
             {profile.avatar ? <img src={profile.avatar} alt="User avatar" /> : <span>{initials}</span>}
           </div>
-          <h2>{profile.firstName || profile.lastName ? `${profile.firstName} ${profile.lastName}` : 'Your Name'}</h2>
-          <p>Personal buyer dashboard</p>
+          <h2>{displayName}</h2>
+          <p>{isOwner ? 'Personal buyer dashboard' : `@${profile.username}`}</p>
         </aside>
 
-        <form className="profile-form" onSubmit={saveProfile}>
-          <label>
-            Avatar
-            <input type="file" accept="image/*" onChange={uploadAvatar} />
-          </label>
-          <label>
-            ชื่อ
-            <input value={profile.firstName} onChange={(event) => updateField('firstName', event.target.value)} placeholder="ชื่อ" />
-          </label>
-          <label>
-            นามสกุล
-            <input value={profile.lastName} onChange={(event) => updateField('lastName', event.target.value)} placeholder="นามสกุล" />
-          </label>
-          <button className="primary-action" type="submit">Save profile</button>
-        </form>
+        {isOwner ? (
+          <form className="profile-form" onSubmit={saveProfile}>
+            <label>
+              Avatar
+              <input type="file" accept="image/*" onChange={uploadAvatar} />
+            </label>
+            <label>
+              ชื่อ
+              <input value={profile.firstName} onChange={(event) => updateField('firstName', event.target.value)} placeholder="ชื่อ" />
+            </label>
+            <label>
+              นามสกุล
+              <input value={profile.lastName} onChange={(event) => updateField('lastName', event.target.value)} placeholder="นามสกุล" />
+            </label>
+            <button className="primary-action" type="submit">Save profile</button>
+          </form>
+        ) : (
+          <div className="profile-form">
+            <p>ดูประกาศทั้งหมดที่ {displayName} ลงไว้ และกดเข้าไปดูรายละเอียดของแต่ละประกาศได้</p>
+          </div>
+        )}
       </div>
+
+      <div className="section-heading" style={{ marginTop: '24px' }}>
+        <div>
+          <span className="eyebrow">Listings</span>
+          <h1>ประกาศที่ {displayName} ลงไว้</h1>
+        </div>
+        <span className="result-count">{listings.length} listings</span>
+      </div>
+
+      {loadingListings ? (
+        <div className="empty-state">กำลังโหลดข้อมูล...</div>
+      ) : listings.length === 0 ? (
+        <div className="empty-state">ยังไม่มีประกาศ</div>
+      ) : (
+        <div className="property-grid">
+          {listings.map((property) => (
+            <article
+              className="property-card"
+              key={property.id}
+              onClick={() => navigate(`/property/${property.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <img src={property.image} alt={property.title} />
+              <div>
+                <span className="pill">{property.type}</span>
+                <h3>{property.title}</h3>
+                <p>{property.location}</p>
+                <div className="property-meta">
+                  <span>{property.beds} beds</span>
+                  <span>{property.baths} baths</span>
+                  <span>{property.area} sqm</span>
+                </div>
+                <strong>{formatPrice(property.price)}</strong>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

@@ -1,5 +1,6 @@
 import express from 'express';
 import Property from '../data/property.model.js';
+import User from '../data/user.model.js';
 import { authUser } from '../authmiddleware/auth.js';
 
 const router = express.Router();
@@ -86,7 +87,7 @@ router.get('/api/properties', async (req, res) => {
 
         const properties = await Property.find(filter)
             .sort(sortOption)
-            .populate('ownerId', 'name email avatar')
+            .populate('ownerId', 'name email avatar username firstName lastName')
             .lean();
 
         res.json({ 
@@ -200,6 +201,31 @@ router.get('/api/user/properties', authUser, async (req, res) => {
             success: true,
             count: properties.length,
             properties 
+        });
+    } catch (error) {
+        console.error('Error fetching user properties:', error);
+        res.status(500).json({ message: 'Error fetching properties' });
+    }
+});
+
+// ============ GET Properties by Username (public) ============
+router.get('/api/users/:username/properties', async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const user = await User.findOne({ username }).select('_id');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const properties = await Property.find({ ownerId: user._id, status: 'active' })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        res.json({
+            success: true,
+            count: properties.length,
+            properties
         });
     } catch (error) {
         console.error('Error fetching user properties:', error);

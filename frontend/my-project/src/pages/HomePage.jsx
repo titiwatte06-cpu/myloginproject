@@ -1,9 +1,35 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { properties, formatPrice } from './pageData'
+import { formatPrice } from './pageData'
+import { fetchProperties } from '../services/propertyApi'
+
+const typeLabels = { House: 'บ้านเดี่ยว', Condo: 'คอนโด', Townhouse: 'ทาวน์เฮาส์', Land: 'ที่ดิน' }
+const placeholderImage = 'https://via.placeholder.com/300x200'
+
+function mapProperty(property) {
+  return {
+    id: property._id,
+    title: property.title,
+    type: typeLabels[property.propertyType] || property.propertyType,
+    price: property.price,
+    image: property.images?.[0]?.url || placeholderImage
+  }
+}
 
 export default function HomePage() {
   const navigate = useNavigate()
-  const featured = properties.slice(0, 3)
+  const [featured, setFeatured] = useState([])
+  const [totalCount, setTotalCount] = useState(0)
+
+  useEffect(() => {
+    fetchProperties()
+      .then((data) => {
+        const all = data.properties || []
+        setTotalCount(all.length)
+        setFeatured(all.slice(0, 3).map(mapProperty))
+      })
+      .catch((error) => console.error('Error fetching properties:', error))
+  }, [])
 
   return (
     <section className="home-page">
@@ -20,7 +46,7 @@ export default function HomePage() {
         <div className="hero-image">
           <img src="https://images.unsplash.com/photo-1600607688969-a5bfcd646154?auto=format&fit=crop&w=1100&q=80" alt="Modern living room" />
           <div className="hero-stat">
-            <strong>6+</strong>
+            <strong>{totalCount}+</strong>
             <span>Selected homes</span>
           </div>
         </div>

@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { fetchPropertyById, addReview } from '../services/propertyApi';
+import { createConversation } from '../services/messageApi';
 
 export default function PropertyDetail({ propertyId, onClose }) {
+    const navigate = useNavigate();
     const [property, setProperty] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -9,6 +12,8 @@ export default function PropertyDetail({ propertyId, onClose }) {
     const [reviewRating, setReviewRating] = useState(5);
     const [reviewComment, setReviewComment] = useState('');
     const [submittingReview, setSubmittingReview] = useState(false);
+    const [showSendMessage, setShowSendMessage] = useState(false);
+    const [startingChat, setStartingChat] = useState(false);
 
     useEffect(() => {
         loadProperty();
@@ -48,6 +53,22 @@ export default function PropertyDetail({ propertyId, onClose }) {
             setError(err.message || 'Failed to add review');
         } finally {
             setSubmittingReview(false);
+        }
+    };
+
+    const handleStartChat = async () => {
+        const ownerId = property?.ownerId?._id || property?.ownerId;
+        if (!ownerId) return;
+
+        try {
+            setStartingChat(true);
+            setError('');
+            const data = await createConversation(ownerId, property._id);
+            navigate(`/messages/${data.conversation._id}`);
+        } catch (err) {
+            setError(err.message || 'Failed to start conversation');
+        } finally {
+            setStartingChat(false);
         }
     };
 
@@ -432,7 +453,22 @@ export default function PropertyDetail({ propertyId, onClose }) {
                         {property.ownerPhone && (
                             <div className="owner-detail">Phone: {property.ownerPhone}</div>
                         )}
-                        <button className="contact-btn">Contact Now</button>
+                        {property.ownerId?.username && (
+                            <button
+                                className="contact-btn"
+                                style={{ background: '#fff', color: '#1976d2', border: '1px solid #1976d2', marginTop: '8px' }}
+                                onClick={() => navigate(`/profile/${property.ownerId.username}`)}
+                            >
+                                ดูโปรไฟล์ผู้โพสต์
+                            </button>
+                        )}
+                        {showSendMessage ? (
+                            <button className="contact-btn" onClick={handleStartChat} disabled={startingChat}>
+                                {startingChat ? 'กำลังเปิดแชท...' : 'Send Message'}
+                            </button>
+                        ) : (
+                            <button className="contact-btn" onClick={() => setShowSendMessage(true)}>Contact Now</button>
+                        )}
                     </div>
 
                     {property.reviews && property.reviews.length > 0 && (

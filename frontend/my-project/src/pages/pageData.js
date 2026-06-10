@@ -98,3 +98,32 @@ export function formatPrice(price) {
     maximumFractionDigits: 0
   }).format(price)
 }
+
+const typeLabels = { House: 'บ้านเดี่ยว', Condo: 'คอนโด', Townhouse: 'ทาวน์เฮาส์', Land: 'ที่ดิน' }
+const placeholderImage = 'https://via.placeholder.com/300x200'
+
+function toLocationLabel(location) {
+  if (!location) return ''
+  const parts = [location.district, location.province].filter(Boolean)
+  return parts.length ? parts.join(', ') : (location.address || '')
+}
+
+export function mapProperty(property) {
+  const owner = property.ownerId
+  const ownerName = (owner && (owner.name || `${owner.firstName || ''} ${owner.lastName || ''}`.trim())) || property.ownerName || 'ผู้ใช้'
+
+  return {
+    id: property._id,
+    title: property.title,
+    type: typeLabels[property.propertyType] || property.propertyType,
+    price: property.price,
+    location: toLocationLabel(property.location),
+    beds: property.bedrooms,
+    baths: property.bathrooms,
+    area: property.area,
+    image: property.images?.[0]?.url || placeholderImage,
+    ownerUsername: owner?.username || '',
+    ownerName,
+    ownerAvatar: owner?.avatar || ''
+  }
+}

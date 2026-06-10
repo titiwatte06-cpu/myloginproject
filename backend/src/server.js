@@ -11,6 +11,7 @@ import { authUser } from '../authmiddleware/auth.js'
 import oauthRoutes from './oauth.routes.js'
 import passwordRoutes from './password.routes.js'
 import propertyRoutes from './property.routes.js'
+import messageRoutes from './message.routes.js'
 import cookieParser from 'cookie-parser'
 
 
@@ -28,6 +29,7 @@ app.use(express.json())
 app.use(oauthRoutes)
 app.use(passwordRoutes)
 app.use(propertyRoutes)
+app.use(messageRoutes)
 
 
 
@@ -126,6 +128,17 @@ app.post('/login',async (req, res) => {
 app.get('/profile', authUser, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// GET /profile/:username — ข้อมูลโปรไฟล์สาธารณะของผู้ใช้คนอื่น
+app.get('/profile/:username', async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).select('username firstName lastName name avatar')
     if (!user) return res.status(404).json({ message: 'User not found' })
     res.json(user)
   } catch (err) {

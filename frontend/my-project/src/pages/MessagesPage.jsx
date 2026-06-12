@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { fetchConversations, fetchMessages, sendMessage, editMessage, unsendMessage, hideMessage } from '../services/messageApi'
+import { fetchConversations, fetchMessages, sendMessage, editMessage, unsendMessage, hideMessage, markConversationRead } from '../services/messageApi'
 import { connectSocket, disconnectSocket, getSocket } from '../services/socketService'
 import { apiUrl } from '../config/api.js'
 
@@ -72,6 +72,7 @@ export default function MessagesPage() {
     fetchMessages(conversationId)
       .then((data) => {
         if (!cancelled) setMessages(data.messages || [])
+        markConversationRead(conversationId).catch(() => {})
       })
       .catch((err) => {
         if (!cancelled) setError(err.message)
@@ -100,7 +101,10 @@ export default function MessagesPage() {
     const handleNewMessage = ({ conversationId: cid, message }) => {
       if (cid === conversationId) {
         setMessages((prev) => [...prev, message])
-        if (message.sender !== myUserId) setIsOtherTyping(false)
+        if (message.sender !== myUserId) {
+          setIsOtherTyping(false)
+          markConversationRead(cid).catch(() => {})
+        }
       } else if (message.sender !== myUserId) {
         setUnreadCounts((prev) => ({ ...prev, [cid]: (prev[cid] || 0) + 1 }))
       }
@@ -142,6 +146,16 @@ export default function MessagesPage() {
       setMessages((prev) => prev.filter((m) => m._id !== messageId))
     }
 
+    const handleMessagesRead = ({ conversationId: cid, userId, messageIds }) => {
+      if (cid !== conversationId) return
+      const idSet = new Set(messageIds)
+      setMessages((prev) => prev.map((m) => (
+        idSet.has(m._id) && !m.readBy?.includes(userId)
+          ? { ...m, readBy: [...(m.readBy || []), userId] }
+          : m
+      )))
+    }
+
     socket.on('new-message', handleNewMessage)
     socket.on('conversation-updated', handleConversationUpdated)
     socket.on('presence', handlePresence)
@@ -149,6 +163,7 @@ export default function MessagesPage() {
     socket.on('stop-typing', handleStopTyping)
     socket.on('message-edited', handleMessageEdited)
     socket.on('message-deleted', handleMessageDeleted)
+    socket.on('messages-read', handleMessagesRead)
 
     return () => {
       socket.off('new-message', handleNewMessage)
@@ -158,6 +173,7 @@ export default function MessagesPage() {
       socket.off('stop-typing', handleStopTyping)
       socket.off('message-edited', handleMessageEdited)
       socket.off('message-deleted', handleMessageDeleted)
+      socket.off('messages-read', handleMessagesRead)
     }
   }, [myUserId, conversationId])
 
@@ -183,6 +199,12 @@ export default function MessagesPage() {
 
   const activeConversation = conversations.find((c) => c._id === conversationId)
   const otherParticipant = activeConversation?.participants?.find((p) => p._id !== myUserId)
+
+  const myMessages = messages.filter((m) => m.sender === myUserId)
+  const lastMineMessage = myMessages[myMessages.length - 1]
+  const lastReadMineMessage = otherParticipant
+    ? [...myMessages].reverse().find((m) => m.readBy?.includes(otherParticipant._id))
+    : undefined
 
   function handleTextChange(event) {
     setText(event.target.value)
@@ -362,6 +384,12 @@ export default function MessagesPage() {
                           ⋯
                         </button>
                       </div>
+                      {isMine && msg._id === lastReadMineMessage?._id && (
+                        <span className="read-status">อ่านแล้ว</span>
+                      )}
+                      {isMine && !lastReadMineMessage && msg._id === lastMineMessage?._id && (
+                        <span className="read-status">ส่งแล้ว</span>
+                      )}
                     </div>
                   )
                 })}

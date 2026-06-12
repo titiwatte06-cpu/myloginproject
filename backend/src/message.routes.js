@@ -140,6 +140,50 @@ router.post('/api/conversations/:id/messages', authUser, async (req, res) => {
     }
 });
 
+// ============ MARK Conversation as Read ============
+router.patch('/api/conversations/:id/read', authUser, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        const conversation = await Conversation.findById(id);
+        if (!conversation) {
+            return res.status(404).json({ message: 'Conversation not found' });
+        }
+        if (!conversation.participants.some((p) => p.toString() === userId)) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        const unread = await Message.find({
+            conversation: id,
+            sender: { $ne: userId },
+            readBy: { $ne: userId }
+        }).select('_id');
+
+        if (unread.length > 0) {
+            const messageIds = unread.map((m) => m._id);
+            await Message.updateMany(
+                { _id: { $in: messageIds } },
+                { $addToSet: { readBy: userId } }
+            );
+
+            const io = getIO();
+            if (io) {
+                io.to(`conversation:${id}`).emit('messages-read', {
+                    conversationId: id,
+                    userId,
+                    messageIds
+                });
+            }
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking conversation as read:', error);
+        res.status(500).json({ message: 'Error marking conversation as read' });
+    }
+});
+
 // ============ EDIT Message ============
 router.patch('/api/conversations/:id/messages/:messageId', authUser, async (req, res) => {
     try {

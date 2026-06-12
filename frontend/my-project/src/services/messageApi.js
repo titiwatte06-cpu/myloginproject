@@ -64,6 +64,18 @@ export async function sendMessage(conversationId, text) {
     return await response.json();
 }
 
+// Mark all messages from the other participant as read
+export async function markConversationRead(conversationId) {
+    const response = await fetch(`${apiUrl}/api/conversations/${conversationId}/read`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: authHeaders()
+    });
+
+    if (!response.ok) throw new Error('Failed to mark conversation as read');
+    return await response.json();
+}
+
 // Edit a message (sender only)
 export async function editMessage(conversationId, messageId, text) {
     const response = await fetch(`${apiUrl}/api/conversations/${conversationId}/messages/${messageId}`, {

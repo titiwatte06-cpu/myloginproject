@@ -95,13 +95,28 @@ export default function ProfilePage() {
     setProfile((current) => ({ ...current, [field]: value }))
   }
 
-  function uploadAvatar(event) {
+  async function uploadAvatar(event) {
     const file = event.target.files?.[0]
     if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = () => updateField('avatar', reader.result)
-    reader.readAsDataURL(file)
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    setStatus('กำลังอัปโหลดรูป...')
+    try {
+      const token = localStorage.getItem('accessToken')
+      const res = await fetch(`${apiUrl}/profile/avatar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      })
+      if (!res.ok) throw new Error('Upload failed')
+      const updated = await res.json()
+      updateField('avatar', updated.avatar || '')
+      setStatus('อัปโหลดรูปสำเร็จ')
+    } catch {
+      setStatus('อัปโหลดรูปไม่สำเร็จ')
+    }
   }
 
   async function saveProfile(event) {

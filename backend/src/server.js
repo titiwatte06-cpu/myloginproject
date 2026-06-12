@@ -15,6 +15,13 @@ import propertyRoutes from './property.routes.js'
 import messageRoutes from './message.routes.js'
 import cookieParser from 'cookie-parser'
 import { initSocket } from './socket.js'
+import multer from 'multer'
+import cloudinary from './cloudinary.js'
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }
+})
 
 
 
@@ -162,6 +169,32 @@ app.patch('/profile', authUser, async (req, res) => {
     res.json(user)
   } catch (err) {
     console.log('error:', err)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// POST /profile/avatar — อัปโหลดรูปโปรไฟล์ขึ้น Cloudinary
+app.post('/profile/avatar', authUser, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' })
+
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'avatars', resource_type: 'image' },
+        (err, result) => (err ? reject(err) : resolve(result))
+      )
+      stream.end(req.file.buffer)
+    })
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $set: { avatar: uploadResult.secure_url } },
+      { returnDocument: 'after' }
+    ).select('-password')
+
+    res.json(user)
+  } catch (err) {
+    console.log('avatar upload error:', err)
     res.status(500).json({ message: 'Server error' })
   }
 })

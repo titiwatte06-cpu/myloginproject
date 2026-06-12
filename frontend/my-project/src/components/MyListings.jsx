@@ -7,10 +7,6 @@ export default function MyListings({ onEditProperty, onPostNew, onViewProperty }
     const [error, setError] = useState('');
     const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-    useEffect(() => {
-        loadUserProperties();
-    }, []);
-
     const loadUserProperties = async () => {
         try {
             setLoading(true);
@@ -23,6 +19,10 @@ export default function MyListings({ onEditProperty, onPostNew, onViewProperty }
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadUserProperties();
+    }, []);
 
     const handleDelete = async (id) => {
         try {

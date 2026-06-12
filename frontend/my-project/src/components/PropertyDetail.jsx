@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchPropertyById, addReview } from '../services/propertyApi';
 import { createConversation } from '../services/messageApi';
@@ -15,11 +15,7 @@ export default function PropertyDetail({ propertyId, onClose }) {
     const [showSendMessage, setShowSendMessage] = useState(false);
     const [startingChat, setStartingChat] = useState(false);
 
-    useEffect(() => {
-        loadProperty();
-    }, [propertyId]);
-
-    const loadProperty = async () => {
+    const loadProperty = useCallback(async () => {
         try {
             setLoading(true);
             setError('');
@@ -30,7 +26,11 @@ export default function PropertyDetail({ propertyId, onClose }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [propertyId]);
+
+    useEffect(() => {
+        loadProperty();
+    }, [loadProperty]);
 
     const handleAddReview = async (e) => {
         e.preventDefault();

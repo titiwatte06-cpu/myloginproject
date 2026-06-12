@@ -21,6 +21,7 @@ loginweb/
 ## การติดตั้งและรัน
 
 **Frontend** (`cd frontend/my-project`):
+
 ```bash
 npm install
 npm run dev      # dev server (Vite)
@@ -29,6 +30,7 @@ npm run lint     # ESLint
 ```
 
 **Backend** (`cd backend`):
+
 ```bash
 npm install
 npm run dev      # watch mode (node --env-file=.env --watch src/server.js)
@@ -38,6 +40,7 @@ npm start        # รันปกติ
 ### Environment Variables
 
 **`backend/.env`**
+
 ```
 MONGODB_URI=...
 SECRET_KEY=...
@@ -48,6 +51,7 @@ CLOUDINARY_API_SECRET=...
 ```
 
 **`frontend/my-project/.env`**
+
 ```
 VITE_API_URL=...
 ```
@@ -65,9 +69,3 @@ VITE_API_URL=...
 4. **ค้นหา/filter ประกาศ** (`SearchPage`) — แสดงชื่อและรูปผู้โพสต์ในการ์ดประกาศ พร้อมลิงก์ไปหน้าโปรไฟล์
 5. **รีวิว** (`ReviewsPage`) — เลือกประกาศจริงจากระบบ แล้วโพสต์/แสดงรีวิวที่ผูกกับ property นั้นผ่าน backend
 6. **โปรไฟล์ผู้ใช้** — แก้ไขชื่อ-นามสกุล และอัปโหลดรูปโปรไฟล์ขึ้น Cloudinary (`POST /profile/avatar`)
-
-## ที่ยังค้างอยู่ / ควรทำต่อ
-
-- ⚠️ `backend/.env` และ `frontend/my-project/.env` ยังถูก commit เข้า git — ต้อง rotate credentials (MongoDB URI, JWT secret) แล้วเพิ่มเข้า `.gitignore`
-- ยังไม่มี automated test (unit/integration)
-- มี `.git` ซ้อนอยู่ใน `frontend/my-project` (เศษจาก `npm create vite`) ควรเอาออก

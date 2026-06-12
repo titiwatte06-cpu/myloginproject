@@ -489,6 +489,12 @@
   font-weight: 800;
 }
 
+.avatar-filename {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .filter-bar input,
 .filter-bar select,
 .profile-form input,

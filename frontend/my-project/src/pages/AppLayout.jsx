@@ -30,6 +30,12 @@ export default function AppLayout({ children }) {
     })
   }, [])
 
+  useEffect(() => {
+    const handleAvatarUpdated = (event) => setAvatar(event.detail.avatar)
+    window.addEventListener('avatar-updated', handleAvatarUpdated)
+    return () => window.removeEventListener('avatar-updated', handleAvatarUpdated)
+  }, [])
+
   function logout() {
     localStorage.removeItem('accessToken')
     navigate('/')

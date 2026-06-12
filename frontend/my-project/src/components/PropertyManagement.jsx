@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PostPropertyForm from './PostPropertyForm';
 import MyListings from './MyListings';
 import PropertyDetail from './PropertyDetail';

@@ -429,7 +429,9 @@ export default function SearchPage() {
                     ) : (
                       <div className="poster-row poster-row--inline">
                         <span className="poster-avatar">
-                          <span>{property.ownerName.charAt(0)}</span>
+                          {property.ownerAvatar
+                            ? <img src={property.ownerAvatar} alt={property.ownerName} />
+                            : <span>{property.ownerName.charAt(0)}</span>}
                         </span>
                         <span className="poster-name">{property.ownerName}</span>
                       </div>

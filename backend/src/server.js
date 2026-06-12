@@ -72,7 +72,6 @@ app.post('/register', async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
         })
-        console.log(process.env.SECRET_KEY)
         res.status(201).json({ message: 'Register successful', token })
 
     } catch (err) {
@@ -98,9 +97,6 @@ app.post('/login',async (req, res) => {
             return res.status(401).json({ message: 'Please login with your OAuth provider' })
         }
 
-        console.log(user.password)
-        console.log(password)
-
         const passwordchecked = await bcrypt.compare(password,user.password)
 
         if (!passwordchecked) return res.status(401).json({ message: 'Invalid email or password' })
@@ -112,15 +108,12 @@ app.post('/login',async (req, res) => {
         { expiresIn: '7d' }
         )
 
-        console.log(process.env.SECRET_KEY)
-
         res.cookie('accessToken', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000  // 7 วัน (milliseconds)
         })
-        console.log(process.env.NODE_ENV)
         res.status(200).json({
             success:true, 
             message: 'Login successful',
@@ -158,8 +151,6 @@ app.get('/profile/:username', async (req, res) => {
 // PATCH /profile — อัปเดตชื่อ
 app.patch('/profile', authUser, async (req, res) => {
   try {
-    console.log('req.user:', req.user)        // ← เพิ่มตรงนี้
-    console.log('req.body:', req.body)        // ← เพิ่มตรงนี้
     const { firstName, lastName } = req.body
     const user = await User.findByIdAndUpdate(
       req.user.id,

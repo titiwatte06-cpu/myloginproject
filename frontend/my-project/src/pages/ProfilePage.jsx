@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const { username } = useParams()
   const [profile, setProfile] = useState({ firstName: '', lastName: '', avatar: '', username: '' })
   const [status, setStatus] = useState('')
+  const [avatarFileName, setAvatarFileName] = useState('')
   const [isOwner, setIsOwner] = useState(false)
   const [listings, setListings] = useState([])
   const [loadingListings, setLoadingListings] = useState(true)
@@ -113,7 +114,9 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error('Upload failed')
       const updated = await res.json()
       updateField('avatar', updated.avatar || '')
+      setAvatarFileName(file.name)
       setStatus('อัปโหลดรูปสำเร็จ')
+      window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { avatar: updated.avatar || '' } }))
     } catch {
       setStatus('อัปโหลดรูปไม่สำเร็จ')
     }
@@ -163,6 +166,7 @@ export default function ProfilePage() {
             <label>
               Avatar
               <input type="file" accept="image/*" onChange={uploadAvatar} />
+              {avatarFileName && <small className="avatar-filename">อัปโหลดแล้ว: {avatarFileName}</small>}
             </label>
             <label>
               ชื่อ

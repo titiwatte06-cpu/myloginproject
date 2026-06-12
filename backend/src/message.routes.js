@@ -2,6 +2,7 @@ import express from 'express';
 import Conversation from '../data/conversation.model.js';
 import Message from '../data/message.model.js';
 import { authUser } from '../authmiddleware/auth.js';
+import { getIO, joinConversationRoom } from './socket.js';
 
 const router = express.Router();
 
@@ -31,6 +32,9 @@ router.post('/api/conversations', authUser, async (req, res) => {
                 property: propertyId || undefined
             });
             await conversation.save();
+
+            joinConversationRoom(userId, conversation._id);
+            joinConversationRoom(recipientId, conversation._id);
         }
 
         await conversation.populate('participants', participantFields);
@@ -114,6 +118,20 @@ router.post('/api/conversations/:id/messages', authUser, async (req, res) => {
         conversation.lastMessage = message.text;
         conversation.lastMessageAt = message.createdAt;
         await conversation.save();
+
+        const io = getIO();
+        if (io) {
+            io.to(`conversation:${id}`).emit('new-message', {
+                conversationId: id,
+                message
+            });
+            io.to(`conversation:${id}`).emit('conversation-updated', {
+                conversationId: id,
+                lastMessage: conversation.lastMessage,
+                lastMessageAt: conversation.lastMessageAt,
+                senderId: userId
+            });
+        }
 
         res.status(201).json({ success: true, message });
     } catch (error) {

@@ -1,4 +1,5 @@
 import express from 'express'
+import http from 'node:http'
 import cors from 'cors'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -13,6 +14,7 @@ import passwordRoutes from './password.routes.js'
 import propertyRoutes from './property.routes.js'
 import messageRoutes from './message.routes.js'
 import cookieParser from 'cookie-parser'
+import { initSocket } from './socket.js'
 
 
 
@@ -178,4 +180,7 @@ connectDB()
 
 const PORT = 3000;
 
-app.listen(PORT,() => console.log("running"))
+const httpServer = http.createServer(app)
+initSocket(httpServer)
+
+httpServer.listen(PORT,() => console.log("running"))

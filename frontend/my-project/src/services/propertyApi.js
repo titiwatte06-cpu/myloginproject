@@ -1,4 +1,4 @@
-const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim();
+import { apiUrl } from '../config/api.js';
 
 // Get all properties with filters
 export async function fetchProperties(filters = {}) {

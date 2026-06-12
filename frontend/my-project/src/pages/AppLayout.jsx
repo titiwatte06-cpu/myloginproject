@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import EstateNavbar from '../components/EstateNavbar'
-
-const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
+import { apiUrl } from '../config/api.js'
 
 export default function AppLayout({ children }) {
   const { pathname } = useLocation()

@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { fetchUserProfile, fetchPropertiesByUsername } from '../services/propertyApi'
 import { formatPrice, mapProperty } from './pageData'
-
-const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
+import { apiUrl } from '../config/api.js'
 
 export default function ProfilePage() {
   const navigate = useNavigate()

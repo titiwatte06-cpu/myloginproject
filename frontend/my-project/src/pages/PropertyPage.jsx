@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropertyManagement from '../components/PropertyManagement';
+import { apiUrl } from '../config/api.js';
 
 export default function PropertyPage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -9,7 +10,6 @@ export default function PropertyPage() {
         // Check if user is authenticated
         const checkAuth = async () => {
             try {
-                const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim();
                 const response = await fetch(`${apiUrl}/api/user/properties`, {
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' }

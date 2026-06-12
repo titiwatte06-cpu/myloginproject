@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { fetchConversations, fetchMessages, sendMessage } from '../services/messageApi'
 import { connectSocket, disconnectSocket, getSocket } from '../services/socketService'
-
-const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim()
+import { apiUrl } from '../config/api.js'
 
 const TYPING_TIMEOUT = 2000
 

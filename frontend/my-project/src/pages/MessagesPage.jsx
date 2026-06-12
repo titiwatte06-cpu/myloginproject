@@ -223,10 +223,10 @@ export default function MessagesPage() {
     }
   }
 
-  function openContextMenu(event, message) {
+  function toggleContextMenu(event, message) {
     event.preventDefault()
     event.stopPropagation()
-    setContextMenu({ x: event.clientX, y: event.clientY, message })
+    setContextMenu((prev) => (prev?.message._id === message._id ? null : { x: event.clientX, y: event.clientY, message }))
   }
 
   function toggleHistory(messageId) {
@@ -345,7 +345,6 @@ export default function MessagesPage() {
                       <div className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
                         <div
                           className={`message-bubble ${isMine ? 'mine' : 'theirs'} ${editingMessage?._id === msg._id ? 'editing' : ''}`}
-                          onContextMenu={(event) => openContextMenu(event, msg)}
                         >
                           {msg.text}
                           {msg.edited && (
@@ -357,7 +356,7 @@ export default function MessagesPage() {
                         <button
                           type="button"
                           className="message-actions-btn"
-                          onClick={(event) => openContextMenu(event, msg)}
+                          onClick={(event) => toggleContextMenu(event, msg)}
                           aria-label="ตัวเลือกข้อความ"
                         >
                           ⋯

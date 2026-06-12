@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { fetchConversations, fetchMessages, sendMessage } from '../services/messageApi'
+import { fetchConversations, fetchMessages, sendMessage, editMessage, unsendMessage, hideMessage } from '../services/messageApi'
 import { connectSocket, disconnectSocket, getSocket } from '../services/socketService'
 import { apiUrl } from '../config/api.js'
 
@@ -30,8 +30,12 @@ export default function MessagesPage() {
   const [onlineUserIds, setOnlineUserIds] = useState(new Set())
   const [unreadCounts, setUnreadCounts] = useState({})
   const [isOtherTyping, setIsOtherTyping] = useState(false)
+  const [contextMenu, setContextMenu] = useState(null)
+  const [editingMessage, setEditingMessage] = useState(null)
+  const [expandedHistory, setExpandedHistory] = useState(new Set())
   const messagesEndRef = useRef(null)
   const typingTimeoutRef = useRef(null)
+  const inputRef = useRef(null)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -128,11 +132,23 @@ export default function MessagesPage() {
       if (cid === conversationId) setIsOtherTyping(false)
     }
 
+    const handleMessageEdited = ({ conversationId: cid, message }) => {
+      if (cid !== conversationId) return
+      setMessages((prev) => prev.map((m) => (m._id === message._id ? message : m)))
+    }
+
+    const handleMessageDeleted = ({ conversationId: cid, messageId }) => {
+      if (cid !== conversationId) return
+      setMessages((prev) => prev.filter((m) => m._id !== messageId))
+    }
+
     socket.on('new-message', handleNewMessage)
     socket.on('conversation-updated', handleConversationUpdated)
     socket.on('presence', handlePresence)
     socket.on('typing', handleTyping)
     socket.on('stop-typing', handleStopTyping)
+    socket.on('message-edited', handleMessageEdited)
+    socket.on('message-deleted', handleMessageDeleted)
 
     return () => {
       socket.off('new-message', handleNewMessage)
@@ -140,8 +156,22 @@ export default function MessagesPage() {
       socket.off('presence', handlePresence)
       socket.off('typing', handleTyping)
       socket.off('stop-typing', handleStopTyping)
+      socket.off('message-edited', handleMessageEdited)
+      socket.off('message-deleted', handleMessageDeleted)
     }
   }, [myUserId, conversationId])
+
+  // Close the context menu when clicking anywhere else
+  useEffect(() => {
+    if (!contextMenu) return
+    const close = () => setContextMenu(null)
+    window.addEventListener('click', close)
+    window.addEventListener('scroll', close, true)
+    return () => {
+      window.removeEventListener('click', close)
+      window.removeEventListener('scroll', close, true)
+    }
+  }, [contextMenu])
 
   useEffect(() => {
     return () => disconnectSocket()
@@ -178,12 +208,66 @@ export default function MessagesPage() {
     getSocket()?.emit('stop-typing', { conversationId })
 
     try {
-      await sendMessage(conversationId, text.trim())
+      if (editingMessage) {
+        const { message } = await editMessage(conversationId, editingMessage._id, text.trim())
+        setMessages((prev) => prev.map((m) => (m._id === message._id ? message : m)))
+        setEditingMessage(null)
+      } else {
+        await sendMessage(conversationId, text.trim())
+      }
       setText('')
     } catch (err) {
       setError(err.message)
     } finally {
       setSending(false)
+    }
+  }
+
+  function openContextMenu(event, message) {
+    event.preventDefault()
+    event.stopPropagation()
+    setContextMenu({ x: event.clientX, y: event.clientY, message })
+  }
+
+  function toggleHistory(messageId) {
+    setExpandedHistory((prev) => {
+      const next = new Set(prev)
+      if (next.has(messageId)) next.delete(messageId)
+      else next.add(messageId)
+      return next
+    })
+  }
+
+  function startEdit(message) {
+    setEditingMessage(message)
+    setText(message.text)
+    setContextMenu(null)
+    inputRef.current?.focus()
+  }
+
+  function cancelEdit() {
+    setEditingMessage(null)
+    setText('')
+  }
+
+  async function handleUnsend(message) {
+    setContextMenu(null)
+    try {
+      await unsendMessage(conversationId, message._id)
+      setMessages((prev) => prev.filter((m) => m._id !== message._id))
+      if (editingMessage?._id === message._id) cancelEdit()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleHide(message) {
+    setContextMenu(null)
+    try {
+      await hideMessage(conversationId, message._id)
+      setMessages((prev) => prev.filter((m) => m._id !== message._id))
+    } catch (err) {
+      setError(err.message)
     }
   }
 
@@ -246,22 +330,58 @@ export default function MessagesPage() {
               </div>
 
               <div className="thread-messages">
-                {messages.map((msg) => (
-                  <div
-                    key={msg._id}
-                    className={`message-bubble ${msg.sender === myUserId ? 'mine' : 'theirs'}`}
-                  >
-                    {msg.text}
-                  </div>
-                ))}
+                {messages.map((msg) => {
+                  const isMine = msg.sender === myUserId
+                  const historyOpen = expandedHistory.has(msg._id)
+                  return (
+                    <div key={msg._id} className={`message-group ${isMine ? 'mine' : 'theirs'}`}>
+                      {msg.edited && historyOpen && (
+                        <div className="edit-history">
+                          {msg.editHistory.map((oldText, index) => (
+                            <div key={index} className="edit-history-entry">{oldText}</div>
+                          ))}
+                        </div>
+                      )}
+                      <div className={`message-row ${isMine ? 'mine' : 'theirs'}`}>
+                        <div
+                          className={`message-bubble ${isMine ? 'mine' : 'theirs'} ${editingMessage?._id === msg._id ? 'editing' : ''}`}
+                          onContextMenu={(event) => openContextMenu(event, msg)}
+                        >
+                          {msg.text}
+                          {msg.edited && (
+                            <span className="edited-label" onClick={() => toggleHistory(msg._id)}>
+                              {' '}(แก้ไขแล้ว)
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="message-actions-btn"
+                          onClick={(event) => openContextMenu(event, msg)}
+                          aria-label="ตัวเลือกข้อความ"
+                        >
+                          ⋯
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
                 <div ref={messagesEndRef} />
               </div>
 
               {isOtherTyping && <div className="typing-indicator">กำลังพิมพ์...</div>}
               {error && <div className="empty-state">{error}</div>}
 
+              {editingMessage && (
+                <div className="edit-banner">
+                  <span>กำลังแก้ไขข้อความ</span>
+                  <button type="button" onClick={cancelEdit}>ยกเลิก</button>
+                </div>
+              )}
+
               <form className="thread-composer" onSubmit={handleSend}>
                 <input
+                  ref={inputRef}
                   type="text"
                   placeholder="พิมพ์ข้อความ..."
                   value={text}
@@ -269,13 +389,31 @@ export default function MessagesPage() {
                   disabled={sending}
                 />
                 <button type="submit" className="primary-action" disabled={sending || !text.trim()}>
-                  ส่ง
+                  {editingMessage ? 'บันทึก' : 'ส่ง'}
                 </button>
               </form>
             </>
           )}
         </div>
       </div>
+
+      {contextMenu && (
+        <div
+          className="message-context-menu"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(event) => event.stopPropagation()}
+        >
+          {contextMenu.message.sender === myUserId && (
+            <button type="button" onClick={() => startEdit(contextMenu.message)}>แก้ไข</button>
+          )}
+          {contextMenu.message.sender === myUserId && (
+            <button type="button" onClick={() => handleUnsend(contextMenu.message)}>ลบสำหรับทุกคน</button>
+          )}
+          <button type="button" onClick={() => handleHide(contextMenu.message)}>
+            {contextMenu.message.sender === myUserId ? 'ลบสำหรับฉัน' : 'ลบ'}
+          </button>
+        </div>
+      )}
     </section>
   )
 }

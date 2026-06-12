@@ -15,6 +15,20 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    edited: {
+        type: Boolean,
+        default: false
+    },
+    editedAt: {
+        type: Date
+    },
+    editHistory: [{
+        type: String
+    }],
+    deletedFor: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     createdAt: {
         type: Date,
         default: Date.now

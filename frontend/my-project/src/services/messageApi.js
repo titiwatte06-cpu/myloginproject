@@ -63,3 +63,49 @@ export async function sendMessage(conversationId, text) {
     }
     return await response.json();
 }
+
+// Edit a message (sender only)
+export async function editMessage(conversationId, messageId, text) {
+    const response = await fetch(`${apiUrl}/api/conversations/${conversationId}/messages/${messageId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: authHeaders(),
+        body: JSON.stringify({ text })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to edit message');
+    }
+    return await response.json();
+}
+
+// Unsend a message - deletes it for everyone (sender only)
+export async function unsendMessage(conversationId, messageId) {
+    const response = await fetch(`${apiUrl}/api/conversations/${conversationId}/messages/${messageId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: authHeaders()
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to unsend message');
+    }
+    return await response.json();
+}
+
+// Hide a message - only removes it from the current user's view
+export async function hideMessage(conversationId, messageId) {
+    const response = await fetch(`${apiUrl}/api/conversations/${conversationId}/messages/${messageId}/hide`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: authHeaders()
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete message');
+    }
+    return await response.json();
+}

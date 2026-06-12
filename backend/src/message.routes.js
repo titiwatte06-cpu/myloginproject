@@ -78,7 +78,7 @@ router.get('/api/conversations/:id/messages', authUser, async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized' });
         }
 
-        const messages = await Message.find({ conversation: id })
+        const messages = await Message.find({ conversation: id, deletedFor: { $ne: userId } })
             .sort({ createdAt: 1 })
             .lean();
 
@@ -137,6 +137,122 @@ router.post('/api/conversations/:id/messages', authUser, async (req, res) => {
     } catch (error) {
         console.error('Error sending message:', error);
         res.status(500).json({ message: 'Error sending message' });
+    }
+});
+
+// ============ EDIT Message ============
+router.patch('/api/conversations/:id/messages/:messageId', authUser, async (req, res) => {
+    try {
+        const { id, messageId } = req.params;
+        const userId = req.user.id;
+        const { text } = req.body;
+
+        if (!text || !text.trim()) {
+            return res.status(400).json({ message: 'Message text is required' });
+        }
+
+        const message = await Message.findById(messageId);
+        if (!message || message.conversation.toString() !== id) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        if (message.sender.toString() !== userId) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        message.editHistory.push(message.text);
+        message.text = text.trim();
+        message.edited = true;
+        message.editedAt = new Date();
+        await message.save();
+
+        const conversation = await Conversation.findById(id);
+        if (conversation.lastMessageAt.getTime() === message.createdAt.getTime()) {
+            conversation.lastMessage = message.text;
+            await conversation.save();
+        }
+
+        const io = getIO();
+        if (io) {
+            io.to(`conversation:${id}`).emit('message-edited', {
+                conversationId: id,
+                message
+            });
+        }
+
+        res.json({ success: true, message });
+    } catch (error) {
+        console.error('Error editing message:', error);
+        res.status(500).json({ message: 'Error editing message' });
+    }
+});
+
+// ============ UNSEND Message (delete for everyone) ============
+router.delete('/api/conversations/:id/messages/:messageId', authUser, async (req, res) => {
+    try {
+        const { id, messageId } = req.params;
+        const userId = req.user.id;
+
+        const message = await Message.findById(messageId);
+        if (!message || message.conversation.toString() !== id) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        if (message.sender.toString() !== userId) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        await Message.deleteOne({ _id: messageId });
+
+        const conversation = await Conversation.findById(id);
+        const latest = await Message.findOne({ conversation: id }).sort({ createdAt: -1 });
+        conversation.lastMessage = latest ? latest.text : '';
+        conversation.lastMessageAt = latest ? latest.createdAt : conversation.createdAt;
+        await conversation.save();
+
+        const io = getIO();
+        if (io) {
+            io.to(`conversation:${id}`).emit('message-deleted', {
+                conversationId: id,
+                messageId
+            });
+            io.to(`conversation:${id}`).emit('conversation-updated', {
+                conversationId: id,
+                lastMessage: conversation.lastMessage,
+                lastMessageAt: conversation.lastMessageAt,
+                senderId: userId
+            });
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error unsending message:', error);
+        res.status(500).json({ message: 'Error unsending message' });
+    }
+});
+
+// ============ DELETE Message for me only ============
+router.patch('/api/conversations/:id/messages/:messageId/hide', authUser, async (req, res) => {
+    try {
+        const { id, messageId } = req.params;
+        const userId = req.user.id;
+
+        const conversation = await Conversation.findById(id);
+        if (!conversation || !conversation.participants.some((p) => p.toString() === userId)) {
+            return res.status(403).json({ message: 'Unauthorized' });
+        }
+
+        const message = await Message.findById(messageId);
+        if (!message || message.conversation.toString() !== id) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        if (!message.deletedFor.some((u) => u.toString() === userId)) {
+            message.deletedFor.push(userId);
+            await message.save();
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error hiding message:', error);
+        res.status(500).json({ message: 'Error hiding message' });
     }
 });
 

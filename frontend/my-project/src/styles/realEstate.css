@@ -383,6 +383,26 @@
   text-decoration: underline;
 }
 
+.poster-row--inline {
+  padding: 0;
+  margin: 0 0 10px -16px;
+  border: none;
+  width: fit-content;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.poster-row--inline:not(button) {
+  cursor: default;
+}
+
+.poster-row--inline:not(button):hover {
+  text-decoration: none;
+}
+
 .poster-avatar {
   display: grid;
   place-items: center;

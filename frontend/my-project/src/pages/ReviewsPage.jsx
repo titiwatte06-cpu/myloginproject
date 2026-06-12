@@ -1,38 +1,78 @@
-import { useState } from 'react'
-import { initialReviews } from './pageData'
-
-const reviewStorageKey = 'estateReviews'
+import { useEffect, useState } from 'react'
+import { fetchProperties, fetchPropertyById, addReview } from '../services/propertyApi'
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState(() => {
-    const saved = localStorage.getItem(reviewStorageKey)
-    return saved ? JSON.parse(saved) : initialReviews
-  })
-  const [form, setForm] = useState({ name: '', property: '', rating: '5', text: '' })
+  const [properties, setProperties] = useState([])
+  const [loadingProperties, setLoadingProperties] = useState(true)
+  const [selectedPropertyId, setSelectedPropertyId] = useState('')
+  const [reviews, setReviews] = useState([])
+  const [loadingReviews, setLoadingReviews] = useState(false)
+  const [form, setForm] = useState({ rating: '5', comment: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    fetchProperties()
+      .then((data) => {
+        if (cancelled) return
+        const list = data.properties || []
+        setProperties(list)
+        if (list.length > 0) setSelectedPropertyId(list[0]._id)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingProperties(false)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!selectedPropertyId) return
+
+    let cancelled = false
+    setLoadingReviews(true)
+    fetchPropertyById(selectedPropertyId)
+      .then((data) => {
+        if (!cancelled) setReviews(data.property?.reviews || [])
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message)
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingReviews(false)
+      })
+    return () => { cancelled = true }
+  }, [selectedPropertyId])
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }))
   }
 
-  function addReview(event) {
+  async function handleAddReview(event) {
     event.preventDefault()
-    if (!form.name.trim() || !form.property.trim() || !form.text.trim()) return
+    if (!selectedPropertyId || !form.comment.trim()) return
 
-    const nextReviews = [
-      {
-        id: Date.now(),
-        name: form.name.trim(),
-        property: form.property.trim(),
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const data = await addReview(selectedPropertyId, {
         rating: Number(form.rating),
-        text: form.text.trim()
-      },
-      ...reviews
-    ]
-
-    setReviews(nextReviews)
-    localStorage.setItem(reviewStorageKey, JSON.stringify(nextReviews))
-    setForm({ name: '', property: '', rating: '5', text: '' })
+        comment: form.comment.trim()
+      })
+      setReviews(data.property?.reviews || [])
+      setForm({ rating: '5', comment: '' })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
+
+  const selectedProperty = properties.find((p) => p._id === selectedPropertyId)
 
   return (
     <section className="reviews-page">
@@ -44,15 +84,21 @@ export default function ReviewsPage() {
       </div>
 
       <div className="reviews-layout">
-        <form className="review-form" onSubmit={addReview}>
+        <form className="review-form" onSubmit={handleAddReview}>
           <h2>เพิ่มรีวิวใหม่</h2>
           <label>
-            ชื่อ
-            <input value={form.name} onChange={(event) => updateForm('name', event.target.value)} placeholder="Your name" />
-          </label>
-          <label>
             บ้าน / โครงการ
-            <input value={form.property} onChange={(event) => updateForm('property', event.target.value)} placeholder="Property name" />
+            {loadingProperties ? (
+              <select disabled><option>กำลังโหลด...</option></select>
+            ) : properties.length === 0 ? (
+              <select disabled><option>ยังไม่มีประกาศ</option></select>
+            ) : (
+              <select value={selectedPropertyId} onChange={(event) => setSelectedPropertyId(event.target.value)}>
+                {properties.map((property) => (
+                  <option key={property._id} value={property._id}>{property.title}</option>
+                ))}
+              </select>
+            )}
           </label>
           <label>
             Rating
@@ -62,22 +108,31 @@ export default function ReviewsPage() {
           </label>
           <label>
             Review
-            <textarea value={form.text} onChange={(event) => updateForm('text', event.target.value)} placeholder="เล่าประสบการณ์ของคุณ" rows="5" />
+            <textarea value={form.comment} onChange={(event) => updateForm('comment', event.target.value)} placeholder="เล่าประสบการณ์ของคุณ" rows="5" />
           </label>
-          <button className="primary-action" type="submit">Add review</button>
+          {error && <div className="empty-state">{error}</div>}
+          <button className="primary-action" type="submit" disabled={submitting || !selectedPropertyId}>
+            {submitting ? 'กำลังส่ง...' : 'Add review'}
+          </button>
         </form>
 
         <div className="review-list">
-          {reviews.map((review) => (
-            <article className="review-card" key={review.id}>
-              <div>
-                <strong>{review.name}</strong>
-                <span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
-              </div>
-              <h3>{review.property}</h3>
-              <p>{review.text}</p>
-            </article>
-          ))}
+          {loadingReviews ? (
+            <div className="empty-state">กำลังโหลดรีวิว...</div>
+          ) : reviews.length === 0 ? (
+            <div className="empty-state">ยังไม่มีรีวิวสำหรับประกาศนี้</div>
+          ) : (
+            [...reviews].reverse().map((review) => (
+              <article className="review-card" key={review._id}>
+                <div>
+                  <strong>{review.userName}</strong>
+                  <span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                </div>
+                <h3>{selectedProperty?.title}</h3>
+                <p>{review.comment}</p>
+              </article>
+            ))
+          )}
         </div>
       </div>
     </section>

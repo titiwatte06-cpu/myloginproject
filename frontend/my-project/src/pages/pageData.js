@@ -67,30 +67,6 @@ export const properties = [
   }
 ]
 
-export const initialReviews = [
-  {
-    id: 1,
-    name: 'Narin S.',
-    property: 'Sathorn Glass House',
-    rating: 5,
-    text: 'พื้นที่เงียบและแปลนบ้านดีมาก เหมาะกับครอบครัวที่อยากอยู่กลางเมืองแต่ยังมีความเป็นส่วนตัว'
-  },
-  {
-    id: 2,
-    name: 'Mali K.',
-    property: 'Ari Sky Residence',
-    rating: 4,
-    text: 'เดินทางสะดวก ห้องรับแสงสวย และส่วนกลางดูแลดี ราคาเหมาะกับทำเล'
-  },
-  {
-    id: 3,
-    name: 'Pawat R.',
-    property: 'Ladprao Family Townhome',
-    rating: 4,
-    text: 'บ้านพร้อมอยู่ ฟังก์ชันครบ จอดรถได้สบาย เหมาะกับคนเริ่มสร้างครอบครัว'
-  }
-]
-
 export function formatPrice(price) {
   return new Intl.NumberFormat('th-TH', {
     style: 'currency',

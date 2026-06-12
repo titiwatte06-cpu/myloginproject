@@ -407,23 +407,33 @@ export default function SearchPage() {
           <div className="property-grid">
             {filteredProperties.map((property) => (
               <article className="property-card" key={property.id}>
-                {property.ownerUsername && (
-                  <button
-                    type="button"
-                    className="poster-row"
-                    onClick={() => navigate(`/profile/${property.ownerUsername}`)}
-                  >
-                    <span className="poster-avatar">
-                      {property.ownerAvatar
-                        ? <img src={property.ownerAvatar} alt={property.ownerName} />
-                        : <span>{property.ownerName.charAt(0)}</span>}
-                    </span>
-                    <span className="poster-name">{property.ownerName}</span>
-                  </button>
-                )}
                 <div className="property-card-body" onClick={() => navigate(`/property/${property.id}`)}>
                   <img src={property.image} alt={property.title} />
                   <div>
+                    {property.ownerUsername ? (
+                      <button
+                        type="button"
+                        className="poster-row poster-row--inline"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          navigate(`/profile/${property.ownerUsername}`)
+                        }}
+                      >
+                        <span className="poster-avatar">
+                          {property.ownerAvatar
+                            ? <img src={property.ownerAvatar} alt={property.ownerName} />
+                            : <span>{property.ownerName.charAt(0)}</span>}
+                        </span>
+                        <span className="poster-name">{property.ownerName}</span>
+                      </button>
+                    ) : (
+                      <div className="poster-row poster-row--inline">
+                        <span className="poster-avatar">
+                          <span>{property.ownerName.charAt(0)}</span>
+                        </span>
+                        <span className="poster-name">{property.ownerName}</span>
+                      </div>
+                    )}
                     <span className="pill">{property.type}</span>
                     <h3>{property.title}</h3>
                     <p>{property.location}</p>
